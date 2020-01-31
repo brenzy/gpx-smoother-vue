@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import GPXSmoother from "./views/GPXSmoother";
+import GpxSmoother from "./views/GpxSmoother";
 
 Vue.use(Router);
 
@@ -9,7 +9,7 @@ export default new Router({
     {
       path: '/',
       name: 'gpx-smoother',
-      component: GPXSmoother
+      component: GpxSmoother
     },
     {
       path: '/about',
