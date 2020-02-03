@@ -1,23 +1,28 @@
 <template>
-  <div class="input-section">
-    <v-file-input
-      placeholder="Select a GPX file"
-      label="Original GPX file"
-      :loading="isLoading"
-      accept=".gpx"
-      v-model="gpxFile"
-      @change="onFileChange"
-      :error-messages="loadError"
-    />
-  </div>
+  <section>
+    <div class="input-section">
+      <v-file-input
+        placeholder="Select a GPX file"
+        label="Original GPX file"
+        :loading="isLoading"
+        accept=".gpx"
+        v-model="gpxFile"
+        @change="onFileChange"
+        :error-messages="loadError"
+      />
+    </div>
+    <Charts></Charts>
+  </section>
 </template>
 
 <script>
 import store from '../store/store';
-import { mapState } from 'vuex'
+import {mapState} from 'vuex';
+import Charts from '../components/Charts';
 
 export default {
   name: 'GpxSmoother',
+  components: {Charts},
   data: () => ({
     gpxFile: null
   }),

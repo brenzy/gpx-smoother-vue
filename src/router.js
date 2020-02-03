@@ -1,6 +1,6 @@
-import Vue from 'vue'
-import Router from 'vue-router'
-import GpxSmoother from "./views/GpxSmoother";
+import Vue from 'vue';
+import Router from 'vue-router';
+import GpxSmoother from './views/GpxSmoother';
 
 Vue.use(Router);
 

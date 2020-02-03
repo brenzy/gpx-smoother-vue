@@ -1,6 +1,6 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import {LOAD_ERRORS, parseJson} from "../utilities/gpxFile";
+import Vue from 'vue';
+import Vuex from 'vuex';
+import {LOAD_ERRORS, parseJson} from '../utilities/gpxFile';
 
 Vue.use(Vuex);
 
@@ -14,8 +14,9 @@ const getDefaultState = () => {
     rawValues: null,
     bElevationAdded: false,
     totalSlope: null,
-    totalDistance: null
-  }
+    totalDistance: null,
+    selection: null // Selection is an array containing [startDistance, endDistance]
+  };
 };
 
 export default new Vuex.Store({
@@ -46,7 +47,7 @@ export default new Vuex.Store({
             context.commit('setFileInfo', fileInfo);
             context.commit('setIsLoading', false);
           }
-          catch(error) {
+          catch (error) {
             if (typeof(error) === 'string') {
               context.commit('setLoadError', error);
             } else {
@@ -57,10 +58,13 @@ export default new Vuex.Store({
         });
       };
       reader.onerror = function(event) {
-        console.error("File could not be read! Code " + event.target.error.code);
+        console.error('File could not be read! Code ' + event.target.error.code);
         context.commit('setLoadError', LOAD_ERRORS.LOAD_ERROR);
       };
       reader.readAsText(gpxFile);
+    },
+    select(context, selection) {
+      context.commit('setSelection', selection);
     }
   },
   mutations: {
@@ -84,6 +88,9 @@ export default new Vuex.Store({
       state.bElevationAdded = fileInfo.bElevationAdded;
       state.totalSlope = fileInfo.totalSlope;
       state.totalDistance = fileInfo.totalDistance;
+    },
+    setSelection(state, selection) {
+      state.selection = selection;
     }
   }
 });

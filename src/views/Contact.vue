@@ -14,15 +14,15 @@
       return {
         name: 'brendaz',
         provider: 'rogers.com'
-      }
+      };
     },
     computed: {
       // a computed getter
       emailAddress: function () {
-        return `${this.name}@${this.provider}`
+        return `${this.name}@${this.provider}`;
       }
     }
-  }
+  };
 </script>
 
 <style lang="sass" scoped>
