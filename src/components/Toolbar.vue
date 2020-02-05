@@ -15,8 +15,8 @@
 
 <script>
   export default {
-    name: "Toolbar"
-  }
+    name: 'Toolbar'
+  };
 </script>
 
 <style scoped>

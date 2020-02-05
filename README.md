@@ -7,17 +7,18 @@ The GPX smoother is being ported to Vue.js.  This will make it easier to import 
 This is a work in progress...
 
 - [x] set up the project
-- [ ] initialize the vuex store and the load the GPX file into the store
-- [ ] initialize the d3 library
-- [ ] elevation graph
-- [ ] slope graph
-- [ ] elevation profile graph
+- [x] initialize the vuex store and the load the GPX file into the store
+- [x] initialize the d3 library
+- [x] elevation graph
+- [x] slope graph
+- [x] elevation profile graph
 - [ ] box smoothing
 - [ ] saving the gpx file
 - [ ] set slope range
 - [ ] flatten values
 - [ ] elevate values
 - [ ] working on part of the data only
+- [ ] browser compatibility
 
 ## Project setup
 ```

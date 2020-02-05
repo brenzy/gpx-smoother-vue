@@ -1,7 +1,7 @@
-import {distVincenty} from "./vincentyFormula";
+import {distVincenty} from './vincentyFormula';
 
-const DEFAULT_NAME = "Smoothed Ride";
-const DEFAULT_DESCRIPTION = "Created by running the ride through a smoothing algorithm.";
+const DEFAULT_NAME = 'Smoothed Ride';
+const DEFAULT_DESCRIPTION = 'Created by running the ride through a smoothing algorithm.';
 export const LOAD_ERRORS =  {
   MISSING_LAT_LONG: 'Missing latitude and/or longitude values.',
   INVALID_FILE_FORMAT: 'Invalid GPX file format.',
@@ -10,12 +10,12 @@ export const LOAD_ERRORS =  {
 
 export function parseJson(jsonRoot) {
   if (!jsonRoot) {
-    throw(LOAD_ERRORS.INVALID_FILE_FORMAT);
+    throw (LOAD_ERRORS.INVALID_FILE_FORMAT);
   }
 
   let gpxNode = jsonRoot.gpx;
   if (!gpxNode) {
-    throw(LOAD_ERRORS.INVALID_FILE_FORMAT);
+    throw (LOAD_ERRORS.INVALID_FILE_FORMAT);
   }
 
   const name = gpxNode.metadata && gpxNode.metadata.name ? gpxNode.metadata.name : DEFAULT_NAME;
@@ -34,7 +34,7 @@ export function parseJson(jsonRoot) {
             trkseg.trkpt.forEach((trkpt) => {
               let point = {};
               if (!trkpt.$ || !trkpt.$.lat || !trkpt.$.lon) {
-                throw(LOAD_ERRORS.MISSING_LAT_LONG);
+                throw (LOAD_ERRORS.MISSING_LAT_LONG);
               }
               point.lat = Number(trkpt.$.lat);
               point.long = Number(trkpt.$.lon);
@@ -78,5 +78,5 @@ export function parseJson(jsonRoot) {
     bElevationAdded,
     totalSlope,
     totalDistance,
-  }
+  };
 }
