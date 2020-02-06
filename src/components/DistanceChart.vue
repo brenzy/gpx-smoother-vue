@@ -8,7 +8,7 @@
 <script>
   import * as d3 from 'd3';
   import {mapState} from 'vuex';
-  import {GraphType} from './chartModel';
+  import {GraphType, LineTypes} from './chartModel';
 
   // noinspection JSUnusedGlobalSymbols
   export default {
@@ -39,19 +39,33 @@
       window.addEventListener('resize', this.resize);
       this.initializeChart();
     },
-    computed: mapState(['rawValues', 'selection', 'totalDistance']),
+    computed: mapState(['rawValues', 'selection', 'totalDistance', 'smoothedValues']),
     watch: {
       rawValues(newValue) {
         if (newValue && newValue.length) {
-          this.setLine(newValue, 'original', false);
+          this.setLine(newValue, LineTypes.ORIGINAL, false);
         } else {
           this.reset();
         }
       },
-      graphType: function() {
+      smoothedValues(newValue) {
+        if (newValue && newValue.length) {
+          this.setLine(newValue, LineTypes.SMOOTHED, true);
+        } else {
+          this.setLine([], LineTypes.SMOOTHED, true);
+          if (this.graphType === GraphType.ELEVATION_PROFILE && this.rawValues) {
+            this.setLine(this.rawValues, LineTypes.ORIGINAL, true);
+          }
+        }
+      },
+      graphType: function(newValue) {
         this.reset();
-        if (this.rawValues && this.totalDistance) {
-          this.setLine(this.rawValues, 'original', true);
+        if (this.rawValues &&
+            (newValue !== GraphType.ELEVATION_PROFILE || !this.smoothedValues)) {
+            this.setLine(this.rawValues, LineTypes.ORIGINAL, true);
+        }
+        if (this.smoothedValues) {
+          this.setLine(this.smoothedValues, LineTypes.SMOOTHED, true);
         }
       },
       selection: function(newValue) {
@@ -191,7 +205,7 @@
       },
       createProfileLine(linePoints, lineType) {
         const _this = this;
-        if (lineType !== 'original') {
+        if (lineType !== LineTypes.ORIGINAL) {
           this.focus.selectAll('polygon.original').remove();
         }
         this.focus.selectAll('polyPath')
@@ -310,14 +324,17 @@
         this.tooltip.style('top', yPos.toString() + 'px');
       },
       setLine(points, lineType, maintainSelection) {
-        const lines = [];
-        lines.push(points);
-        let allPoints = [];
-        let length = lines.length;
-        for (let line = 0; line < length; line++) {
-          allPoints = allPoints.concat(lines[line]);
+        let allPoints;
+        if (this.smoothedValues) {
+          allPoints = [
+            ...this.rawValues,
+            ...this.smoothedValues
+          ];
+        } else {
+          allPoints = [ ...this.rawValues ];
         }
-       if (lineType === 'original') {
+
+        if (lineType === LineTypes.ORIGINAL) {
           this.xExtents = d3.extent(allPoints, d => {
             return d.totalDistance;
           });
@@ -356,7 +373,7 @@
         else
           this.createElevationLine(points, lineType);
 
-        if (lineType === 'original' && !this.displayOriginal) {
+        if (lineType === LineTypes.ORIGINAL && !this.displayOriginal) {
           this.showOriginal(false);
         }
         this.draw();

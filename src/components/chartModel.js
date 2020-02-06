@@ -4,4 +4,10 @@ export const GraphType = Object.freeze({
   ELEVATION_PROFILE: 'eleProfile',
 });
 
+export const LineTypes = Object.freeze({
+  ORIGINAL: 'original',
+  SMOOTHED: 'modified'
+});
+
+
 

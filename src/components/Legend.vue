@@ -1,10 +1,18 @@
 <template>
   <div class="legend">
-    <div class="slope-legend-wrapper">
-      <div v-show="graphType === graphTypes.ELEVATION_PROFILE">
-        <div class="slope-label">Slope: </div>
-        <div class="slope-colormap"></div>
-      </div>
+    <div class="original">
+      <span class="swatch"></span>
+      <span>Original</span>
+    </div>
+    <div class="modified">
+      <span class="swatch"></span>
+      <span>New</span>
+    </div>
+    <div
+      class="slope-legend-wrapper"
+      v-show="graphType === graphTypes.ELEVATION_PROFILE">
+      <div class="slope-colormap"></div>
+      <div class="slope-label">Slope</div>
     </div>
   </div>
 </template>
@@ -70,12 +78,14 @@
   };
 </script>
 
-<style lang="sass">
+<style lang="sass" scoped>
 
   .legend
-    margin: 0 40px 20px
+    margin: 20px 40px
     font-size: 20px
-    height: 60px
+    display: flex
+    align-items: center
+    line-height: 60px
 
   .legend .swatch
     width: 40px
@@ -95,30 +105,17 @@
     margin-right: 20px
     display: inline-block
 
-  .slope-legend
-    display: inline-block
-
   .slope-legend-wrapper
-    display: inline-block
-    height: 60px
-    line-height: 60px
+    display: flex
+    align-items: center
 
   .slope-label
-    display: inline-block
     margin-right: 10px
-    line-height: 40px
-    height: 40px
 
   .slope-colormap
-      width: 200px
-      height: 40px
-      display: inline-block
-      vertical-align: middle
-      margin-left: 0
-      margin-right: 20px
-
-  .slope-colormap svg
-      padding-top: 10px
+    width: 200px
+    height: 30px
+    margin-right: 20px
 
   .key path
     display: none

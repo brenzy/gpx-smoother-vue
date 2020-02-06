@@ -12,12 +12,13 @@ This is a work in progress...
 - [x] elevation graph
 - [x] slope graph
 - [x] elevation profile graph
-- [ ] box smoothing
+- [x] box smoothing
+- [x] set slope range
+- [x] flatten values
+- [x] elevate values
+- [x] working on part of the data only
 - [ ] saving the gpx file
-- [ ] set slope range
-- [ ] flatten values
-- [ ] elevate values
-- [ ] working on part of the data only
+- [ ] input validation
 - [ ] browser compatibility
 
 ## Project setup
