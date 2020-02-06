@@ -7,7 +7,7 @@
 <script>
 import * as d3 from 'd3';
 import {mapState} from 'vuex';
-import {GraphType} from './chartModel';
+import {GraphType, LineTypes} from './chartModel';
 import store from '../store/store';
 
 export default {
@@ -40,23 +40,35 @@ export default {
     window.addEventListener('resize', this.resize);
     this.initializeChart();
   },
-  computed: mapState(['rawValues', 'selection']),
+  computed: mapState(['rawValues', 'smoothedValues', 'selection']),
   watch: {
     rawValues(newValue) {
       if (newValue && newValue.length) {
-        this.setLine(newValue, 'original', false);
+        this.setLine(newValue, LineTypes.ORIGINAL, false);
       } else {
         this.reset();
+      }
+    },
+    smoothedValues(newValue) {
+      if (newValue && newValue.length) {
+        this.setLine(newValue, LineTypes.SMOOTHED, true);
+      } else {
+        this.setLine([], LineTypes.SMOOTHED, true);
       }
     },
     graphType: function() {
       this.reset();
       if (this.rawValues) {
-        this.setLine(this.rawValues, 'original', true);
+        this.setLine(this.rawValues, LineTypes.ORIGINAL, true);
+      }
+      if (this.smoothedValues) {
+        this.setLine(this.smoothedValues, LineTypes.SMOOTHED, true);
       }
     },
     selection: function(newValue) {
-      this.drawSelectionHandles(newValue);
+      if (newValue === null  && this.xScale) {
+        this.gBrush.call(this.brush.move, this.xScale.range());
+      }
     }
   },
   methods: {
@@ -164,6 +176,7 @@ export default {
       if (d3.event && d3.event.selection) {
         const newSelection = d3.event.selection.map(this.miniXScale.invert);
         store.dispatch('select', newSelection);
+        this.drawSelectionHandles(newSelection);
       }
     },
     onSelectionChanged() {
@@ -191,13 +204,16 @@ export default {
         .attr('d', this.miniElevationLine);
     },
     setLine(points, lineType, maintainSelection) {
-      const lines = [];
-      lines.push(points);
-      let allPoints = [];
-      let length = lines.length;
-      for (let line = 0; line < length; line++) {
-        allPoints = allPoints.concat(lines[line]);
+      let allPoints;
+      if (this.smoothedValues) {
+        allPoints = [
+          ...this.rawValues,
+          ...this.smoothedValues
+        ];
+      } else {
+        allPoints = [ ...this.rawValues ];
       }
+
       if (lineType === 'original') {
         this.xExtents = d3.extent(allPoints, d => {
           return d.totalDistance;

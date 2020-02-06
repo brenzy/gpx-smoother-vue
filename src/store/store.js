@@ -1,6 +1,10 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import {LOAD_ERRORS, parseJson} from '../utilities/gpxFile';
+import {boxSmoothing} from '../utilities/boxSmoothing';
+import {elevatePoints} from '../utilities/elevatePoints';
+import {setSlopeRange} from '../utilities/setSlopeRange';
+import {flattenPoints} from '../utilities/flattenPoints';
 
 Vue.use(Vuex);
 
@@ -12,10 +16,12 @@ const getDefaultState = () => {
     name: null,
     description: null,
     rawValues: null,
+    smoothedValues: null,
     bElevationAdded: false,
     totalSlope: null,
     totalDistance: null,
-    selection: null // Selection is an array containing [startDistance, endDistance]
+    averageSlope: null,
+    selection: null, // Selection is an array containing [startDistance, endDistance]
   };
 };
 
@@ -65,6 +71,29 @@ export default new Vuex.Store({
     },
     select(context, selection) {
       context.commit('setSelection', selection);
+    },
+    smooth(context, numberofPoints) {
+      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
+      const smoothedValues = boxSmoothing(toSmooth, numberofPoints, context.state.selection);
+      context.commit('setSmoothedValues', smoothedValues);
+    },
+    slopeRange(context, range) {
+      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
+      const smoothedValues = setSlopeRange(toSmooth, range, context.state.selection);
+      context.commit('setSmoothedValues', smoothedValues);
+    },
+    flatten(context, slopeDelta) {
+      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
+      const smoothedValues = flattenPoints(toSmooth, slopeDelta, context.state.selection);
+      context.commit('setSmoothedValues', smoothedValues);
+    },
+    elevate(context, metres) {
+      const toElevate = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
+      const smoothedValues = elevatePoints(toElevate, metres, context.state.selection);
+      context.commit('setSmoothedValues', smoothedValues);
+    },
+    resetSmoothing(context) {
+      context.commit('resetSmoothing');
     }
   },
   mutations: {
@@ -91,6 +120,15 @@ export default new Vuex.Store({
     },
     setSelection(state, selection) {
       state.selection = selection;
+    },
+    setSmoothedValues(state, smoothedValues) {
+      state.averageSlope = smoothedValues.averageSlope;
+      state.smoothedValues = smoothedValues.smoothedValues;
+    },
+    resetSmoothing(state) {
+      state.selection = null;
+      state.averageSlope = null;
+      state.smoothedValues = null;
     }
   }
 });
