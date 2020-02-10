@@ -1,5 +1,6 @@
 <template>
   <main>
+    <div class="instruct">1. Load a gpx file:</div>
     <div class="file-input">
       <v-file-input
         placeholder="Select a GPX file"
@@ -11,6 +12,7 @@
         :error-messages="loadError"
       />
     </div>
+    <div class="instruct">2. Smooth the data:</div>
     <div class="smoother-input">
       <div class="input-row">
         <v-btn
@@ -60,15 +62,33 @@
           v-model="metresShift"
         />
       </div>
-
       <v-btn
         @click="onResetData"
-        :disabled="!canReset">
+        :disabled="!haveSmoothedValues">
         Reset the Data
       </v-btn>
     </div>
 
+    <div class="instruct">3. Check out the resulting slope. Hover over a point to see details:</div>
     <Charts></Charts>
+
+    <div class="instruct">4. Download to a new GPX file:</div>
+    <div class="save-options">
+      <v-text-field
+        label="File Name"
+        v-model="gpxFileName" />
+      <v-text-field
+        label="GPX Name"
+        v-model="gpxName" />
+      <v-text-field
+        label="Description"
+        v-model="gpxDescription" />
+      <v-btn
+        @click="onDownload"
+        :disabled="!haveSmoothedValues">
+        Download
+      </v-btn>
+    </div>
   </main>
 </template>
 
@@ -76,6 +96,8 @@
 import store from '../store/store';
 import {mapState} from 'vuex';
 import Charts from '../components/Charts';
+import {updateJson} from '../utilities/gpxFile';
+import * as xml2js from 'xml2js';
 
 export default {
   name: 'GpxSmoother',
@@ -86,15 +108,27 @@ export default {
     metresShift: 1000,
     slopeDelta: 1,
     minSlope: 0,
-    maxSlope: 8
+    maxSlope: 8,
+    gpxFileName: 'smoother.gpx',
+    gpxName: '',
+    gpxDescription: ''
   }),
   computed: {
+    ...mapState(['name', 'description', 'fileJson', 'smoothedValues']),
     ...mapState({
       isLoading: state => state.isLoading,
       loadError: state => state.loadError,
       canSmooth: state => (state.rawValues !== null && state.rawValues.length > 0),
-      canReset: state => (state.rawValues !== null && state.smoothedValues !== null)
-    })
+      haveSmoothedValues: state => (state.rawValues !== null && state.smoothedValues !== null)
+    }),
+  },
+  watch: {
+    name(newValue) {
+      this.gpxName = newValue;
+    },
+    description(newValue) {
+      this.gpxDescription = newValue;
+    },
   },
   methods: {
     onFileChange() {
@@ -114,11 +148,38 @@ export default {
     },
     onResetData() {
       store.dispatch('resetSmoothing');
+    },
+    download(filename, text) {
+      // TODO: Investigate https://github.com/jimmywarting/StreamSaver.js
+      var element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('download', filename);
+
+      element.style.display = 'none';
+      document.body.appendChild(element);
+
+      element.click();
+
+      document.body.removeChild(element);
+    },
+    onDownload() {
+      if (!this.smoothedValues) {
+        return;
+      }
+      const smoothedJson = JSON.parse(JSON.stringify(this.fileJson));
+      updateJson(smoothedJson, this.gpxName, this.gpxDescription, this.smoothedValues);
+      let builder = new xml2js.Builder();
+      const smoothedGpx = builder.buildObject(smoothedJson);
+      this.download(this.gpxFileName, smoothedGpx);
     }
   }
 };
 </script>
 <style lang="sass">
+  .instruct
+    font-size: 20px
+    margin: 10px
+
   .file-input
     margin: 20px
     .v-input__slot
@@ -139,5 +200,10 @@ export default {
       max-width: 600px
       .v-input
         margin-left: 20px
+
+  .save-options
+    margin: 20px
+    .v-input__slot
+      max-width: 600px
 
 </style>

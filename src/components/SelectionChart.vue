@@ -52,7 +52,7 @@ export default {
     smoothedValues(newValue) {
       if (newValue && newValue.length) {
         this.setLine(newValue, LineTypes.SMOOTHED, true);
-      } else {
+      } else if (this.rawValues && this.rawValues.length) {
         this.setLine([], LineTypes.SMOOTHED, true);
       }
     },

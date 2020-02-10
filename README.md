@@ -17,9 +17,12 @@ This is a work in progress...
 - [x] flatten values
 - [x] elevate values
 - [x] working on part of the data only
-- [ ] saving the gpx file
+- [x] saving the gpx file
+- [ ] Savitzky–Golay filter
 - [ ] input validation
 - [ ] browser compatibility
+- [ ] map the route
+- [ ] accept more than one file type
 
 ## Project setup
 ```

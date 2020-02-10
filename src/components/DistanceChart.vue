@@ -51,7 +51,7 @@
       smoothedValues(newValue) {
         if (newValue && newValue.length) {
           this.setLine(newValue, LineTypes.SMOOTHED, true);
-        } else {
+        } else if (this.rawValues && this.rawValues.length) {
           this.setLine([], LineTypes.SMOOTHED, true);
           if (this.graphType === GraphType.ELEVATION_PROFILE && this.rawValues) {
             this.setLine(this.rawValues, LineTypes.ORIGINAL, true);
