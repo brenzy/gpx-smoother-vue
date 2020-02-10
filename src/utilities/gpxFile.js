@@ -8,6 +8,10 @@ export const LOAD_ERRORS =  {
   LOAD_ERROR: 'Error reading the GPX file.'
 };
 
+export const SAVE_ERRORS =  {
+  SAVE_ERROR: 'Error saving the GPX file.'
+};
+
 export function parseJson(jsonRoot) {
   if (!jsonRoot) {
     throw (LOAD_ERRORS.INVALID_FILE_FORMAT);
@@ -18,8 +22,9 @@ export function parseJson(jsonRoot) {
     throw (LOAD_ERRORS.INVALID_FILE_FORMAT);
   }
 
-  const name = gpxNode.metadata && gpxNode.metadata.name ? gpxNode.metadata.name : DEFAULT_NAME;
-  const description = gpxNode.metadata && gpxNode.metadata.desc ? gpxNode.metadata.desc : DEFAULT_DESCRIPTION;
+  const metadata = gpxNode.metadata && gpxNode.metadata.length ? gpxNode.metadata[0] : null;
+  const name = metadata && metadata.name && metadata.name.length ? metadata.name[0] : DEFAULT_NAME;
+  const description = metadata && metadata.desc && metadata.desc.length ? metadata.desc[0] : DEFAULT_DESCRIPTION;
 
   let rawValues = [];
   let previous =  null;
@@ -79,4 +84,57 @@ export function parseJson(jsonRoot) {
     totalSlope,
     totalDistance,
   };
+}
+
+export function updateJson(jsonRoot, name, desc, newValues) {
+  if (!jsonRoot) {
+    throw (SAVE_ERRORS.SAVE_ERROR);
+  }
+
+  let gpxNode = jsonRoot.gpx;
+  if (!gpxNode) {
+    throw (SAVE_ERRORS.SAVE_ERROR);
+  }
+
+  // Add the name and description to the metadata
+  let metadata = gpxNode.metadata && gpxNode.metadata.length ? gpxNode.metadata[0] : null;
+  if (!metadata) {
+    metadata = [{name: [name], desc: [desc]}];
+    jsonRoot.gpx = {
+      metadata,
+      ...gpxNode,
+    };
+  } else {
+    metadata.name = [name];
+    metadata.desc = [desc];
+  }
+
+  let currentPointIndex = 0;
+  if (gpxNode.trk) {
+    gpxNode.trk.forEach((trk) => {
+      if (trk.trkseg) {
+        trk.trkseg.forEach((trkseg) => {
+          if (trkseg.trkpt) {
+            trkseg.trkpt.forEach((trkpt) => {
+              if (currentPointIndex > newValues.length) {
+                throw (SAVE_ERRORS.SAVE_ERROR);
+              }
+              let point = newValues[currentPointIndex++];
+              if (!trkpt.$ || !trkpt.$.lat || !trkpt.$.lon) {
+                throw (SAVE_ERRORS.SAVE_ERROR);
+              }
+              let lat = Number(trkpt.$.lat);
+              let long = Number(trkpt.$.lon);
+              if (lat !== point.lat || long !== point.long ) {
+                throw (SAVE_ERRORS.SAVE_ERROR);
+              }
+              if (trkpt.ele && trkpt.ele.length) {
+                trkpt.ele = [point.ele];
+              }
+            });
+          }
+        });
+      }
+    });
+  }
 }
