@@ -5,6 +5,7 @@ import {boxSmoothing} from '../utilities/boxSmoothing';
 import {elevatePoints} from '../utilities/elevatePoints';
 import {setSlopeRange} from '../utilities/setSlopeRange';
 import {flattenPoints} from '../utilities/flattenPoints';
+import {savitzkyGolay} from '../utilities/savitzkyGolay';
 
 Vue.use(Vuex);
 
@@ -75,6 +76,11 @@ export default new Vuex.Store({
     smooth(context, numberofPoints) {
       const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
       const smoothedValues = boxSmoothing(toSmooth, numberofPoints, context.state.selection);
+      context.commit('setSmoothedValues', smoothedValues);
+    },
+    savitzkyGolay(context, options) {
+      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
+      const smoothedValues = savitzkyGolay(toSmooth, options, context.state.selection);
       context.commit('setSmoothedValues', smoothedValues);
     },
     slopeRange(context, range) {

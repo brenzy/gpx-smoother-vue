@@ -5,24 +5,12 @@ The GPX smoother is being ported to Vue.js.  This will make it easier to import 
 ## ToDo List
 
 This is a work in progress...
-
-- [x] set up the project
-- [x] initialize the vuex store and the load the GPX file into the store
-- [x] initialize the d3 library
-- [x] elevation graph
-- [x] slope graph
-- [x] elevation profile graph
-- [x] box smoothing
-- [x] set slope range
-- [x] flatten values
-- [x] elevate values
-- [x] working on part of the data only
-- [x] saving the gpx file
-- [ ] Savitzky–Golay filter
+- [ ] try removing points according to a distance-based criteria in order to smooth the path (see http://www.thescrapyard.org/software/gpxsmooth.html#algorithm)
 - [ ] input validation
 - [ ] browser compatibility
 - [ ] map the route
-- [ ] accept more than one file type
+- [ ] accept more than one file type (fit, tcx, kml)
+- [ ] try some different UI alternatives for less scrolling 
 
 ## Project setup
 ```
