@@ -18,11 +18,30 @@
         <v-btn
           @click="onSmoothValues"
           :disabled="!canSmooth">
-          Smooth Values
+          Apply Box-Smoothing
         </v-btn>
         <v-text-field
           label="Number of points to smoother over(odd)"
           v-model="numSmoothingPoints"
+        />
+      </div>
+      <div class="input-row">
+        <v-btn
+          @click="onSavitzyGolay"
+          :disabled="!canSmooth">
+          Apply Savitzky-Golay Smoothing
+        </v-btn>
+        <v-text-field
+          label="Window Size (odd)"
+          v-model="windowSize"
+        />
+        <v-text-field
+          label="Derivative"
+          v-model="derivative"
+        />
+        <v-text-field
+          label="Polynomial (1 to 5)"
+          v-model="polynomial"
         />
       </div>
       <div class="input-row">
@@ -105,7 +124,10 @@ export default {
   data: () => ({
     gpxFile: null,
     numSmoothingPoints: 5,
-    metresShift: 1000,
+    windowSize: 5,
+    derivative: 0,
+    polynomial: 3,
+    metresShift: 100,
     slopeDelta: 1,
     minSlope: 0,
     maxSlope: 8,
@@ -136,6 +158,10 @@ export default {
     },
     onSmoothValues() {
       store.dispatch('smooth', this.numSmoothingPoints);
+    },
+    onSavitzyGolay() {
+      store.dispatch('savitzkyGolay',
+        {windowSize: +this.windowSize, derivative: +this.derivative, polynomial: +this.polynomial});
     },
     onSetSlopeRange() {
       store.dispatch('slopeRange', {minSlope: this.minSlope, maxSlope: this.maxSlope});
@@ -188,7 +214,7 @@ export default {
   .smoother-input
     margin: 20px 20px 20px 50px
     .v-input
-      max-width: 400px
+      max-width: 250px
     .v-text-field > .v-input__control > .v-input__slot:before,
     .v-text-field > .v-input__control > .v-input__slot:after
       max-width: 100px
@@ -197,7 +223,7 @@ export default {
     .input-row
       display: flex
       align-items: start
-      max-width: 600px
+      min-height: 70px
       .v-input
         margin-left: 20px
 
