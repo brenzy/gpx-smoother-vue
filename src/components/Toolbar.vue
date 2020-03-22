@@ -2,7 +2,7 @@
   <div>
      <v-app-bar dark color="primary">
        <v-toolbar-items>
-         <v-btn text to="/">GPX Smoother</v-btn>
+         <v-btn text to="/">GPX Smoother Version 1.0</v-btn>
        </v-toolbar-items>
       <v-spacer/>
       <v-toolbar-items>

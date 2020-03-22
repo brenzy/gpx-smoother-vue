@@ -86,7 +86,7 @@ export function parseJson(jsonRoot) {
   };
 }
 
-export function updateJson(jsonRoot, name, desc, newValues) {
+export function updateJson(jsonRoot, name, desc, newValues, decreasePrecision) {
   if (!jsonRoot) {
     throw (SAVE_ERRORS.SAVE_ERROR);
   }
@@ -128,8 +128,12 @@ export function updateJson(jsonRoot, name, desc, newValues) {
               if (lat !== point.lat || long !== point.long ) {
                 throw (SAVE_ERRORS.SAVE_ERROR);
               }
+              if (decreasePrecision) {
+                trkpt.$.lat = Math.floor(point.lat * 100000) / 100000;
+                trkpt.$.lon = Math.floor(point.long * 100000) / 100000;
+              }
               if (trkpt.ele && trkpt.ele.length) {
-                trkpt.ele = [point.ele];
+                trkpt.ele = [decreasePrecision ? Math.floor(point.ele * 100) / 100 : point.ele];
               }
             });
           }

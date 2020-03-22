@@ -1,6 +1,6 @@
 {
-  "name": "gpx-smoother-vue-001",
-  "version": "0.1.0",
+  "name": "gpx-smoother-vue",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
