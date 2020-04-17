@@ -1,10 +1,22 @@
 # gpx-smoother-vue
 
-The GPX smoother is being ported to Vue.js.  This will make it easier to import some more complicated smoothing algorithms.
+The GPX Smoother lets you apply a few different "smoothing" algorithms to a GPX file for riding the route on a trainer.
+
+The GPX smoother has been ported to Vue.js to make it easier to import some more complicated smoothing algorithms.
+This version of the GPX smoother is also a JAMstack application (uses only JavaScript, APIs and Markup and 
+does not depend on a server).
+
+I love riding GPS routes on my Tacx trainer, but I wasn't happy with the built-in functionality for changing the 
+elevation profile of a ride. This program was created so that I could ride interesting routes, and set the slope where
+ I wanted it, removing steep down-hill and uphill grades.  More features have been added over the years at the request 
+ of other riders.
+
+This version of the GPX smoother can be found at: https://www.potter.ca/Biking/smoother-beta/index.html#/
 
 ## ToDo List
 
 This is a work in progress...
+- [ ] find a better algorithm to get rid of spikes in the slope
 - [ ] try removing points according to a distance-based criteria in order to smooth the path (see http://www.thescrapyard.org/software/gpxsmooth.html#algorithm)
 - [ ] input validation
 - [ ] browser compatibility
