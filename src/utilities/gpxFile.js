@@ -1,4 +1,5 @@
 import {distVincenty} from './vincentyFormula';
+import {averageSlopeFromTotal} from './displayFormat';
 
 const DEFAULT_NAME = 'Smoothed Ride';
 const DEFAULT_DESCRIPTION = 'Created by running the ride through a smoothing algorithm.';
@@ -81,7 +82,7 @@ export function parseJson(jsonRoot) {
     description,
     rawValues,
     bElevationAdded,
-    totalSlope,
+    averageSlope: averageSlopeFromTotal(totalSlope, rawValues.length),
     totalDistance,
   };
 }

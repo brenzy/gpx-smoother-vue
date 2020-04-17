@@ -10,7 +10,8 @@
       <li>Savitzky-Golay Smoothing - a more complex smoothing algorithm. </li>
       <li>Set Range - lets you set the maximum and minimum slope.</li>
       <li>Flatten - lets you set the maximum change in slope between any two points.</li>
-      <li>Elevate - increases or decreases elevation by a fixed amount.</li>
+      <li>Slope Difficulty - Increase or decrease the slope between each set of points by a percentage.</li>
+      <li>Elevate - increases or decreases the elevation of each point by a fixed amount.</li>
     </ul>
     <p>
       Slide the triangular handles on the smaller graph to select only a portion of the ride to smooth.

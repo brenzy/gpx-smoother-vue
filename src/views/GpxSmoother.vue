@@ -72,6 +72,17 @@
       </div>
       <div class="input-row">
         <v-btn
+          @click="onUpdateSlopePercentages"
+          :disabled="!canSmooth">
+          Slope Difficulty
+        </v-btn>
+        <v-text-field
+          label="Percentage increase or decrease in slope"
+          v-model="slopeShift"
+        />
+      </div>
+      <div class="input-row">
+        <v-btn
           @click="onElevateValues"
           :disabled="!canSmooth">
           Elevate Values
@@ -133,6 +144,7 @@ export default {
     polynomial: 3,
     metresShift: 100,
     slopeDelta: 1,
+    slopeShift: 3,
     minSlope: 0,
     maxSlope: 8,
     gpxFileName: 'smoother.gpx',
@@ -155,7 +167,7 @@ export default {
     },
     description(newValue) {
       this.gpxDescription = newValue;
-    },
+    }
   },
   methods: {
     onFileChange() {
@@ -173,6 +185,9 @@ export default {
     },
     onFlattenValues() {
       store.dispatch('flatten', this.slopeDelta);
+    },
+    onUpdateSlopePercentages() {
+      store.dispatch('slopePercentage', this.slopeShift);
     },
     onElevateValues() {
       store.dispatch('elevate', this.metresShift);
@@ -231,6 +246,11 @@ export default {
       min-height: 70px
       .v-input
         margin-left: 20px
+      .v-button
+        margin-top: 10px
+
+  .average-slope
+    margin-left: 23px
 
   .save-options
     margin: 20px
