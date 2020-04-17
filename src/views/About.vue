@@ -26,10 +26,19 @@
     <ul>
       <li>Added the ability to decrease precision for latitude, longitude, and elevation.</li>
     </ul>
+    <h3>Version 1.1.0</h3>
+    <ul>
+      <li>Added the slope difficulty feature to allow the slope between each set of points to be increased or
+          decreased by a fixed percentage.</li>
+      <li>Added the display of average slope for original and smoothed data.</li>
+    </ul>
+
   </div>
 
 </template>
 <style lang="sass" scoped>
   .about
     margin: 48px
+  h3
+    margin-top: 16px
 </style>
