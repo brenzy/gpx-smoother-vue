@@ -1,18 +1,29 @@
 <template>
   <div class="legend">
     <div class="original">
-      <span class="swatch"></span>
-      <span>Original</span>
+      <div class="line-legend">
+        <div>Original</div>
+        <div class="swatch"></div>
+      </div>
+      <div>
+        <div class="average-label">Average Slope:</div>
+        <div class="raw-slope">{{formattedRawAverage}}</div>
+      </div>
     </div>
     <div class="modified">
-      <span class="swatch"></span>
-      <span>New</span>
+      <div class="line-legend">
+        <div>New</div>
+        <div class="swatch"></div>
+      </div>
+      <div>
+        <div class="average-label">Average Slope:</div>
+        <div class="smoothed-slope">{{formattedSmoothedAverage}}</div>
+      </div>
+
     </div>
-    <div
-      class="slope-legend-wrapper"
-      v-show="graphType === graphTypes.ELEVATION_PROFILE">
-      <div class="slope-colormap"></div>
+    <div class="slope-legend-wrapper" v-show="graphType === graphTypes.ELEVATION_PROFILE">
       <div class="slope-label">Slope</div>
+      <div class="slope-colormap"></div>
     </div>
   </div>
 </template>
@@ -20,6 +31,7 @@
 <script>
   import * as d3 from 'd3';
   import {GraphType} from './chartModel';
+  import {mapState} from 'vuex';
 
   export default {
     name: 'Legend',
@@ -28,8 +40,21 @@
       colorScale: Function
     },
     data: () => ({
-      graphTypes: GraphType
+      graphTypes: GraphType,
+      formattedRawAverage: '',
+      formattedSmoothedAverage: ''
     }),
+    computed: {
+      ...mapState(['rawAverageSlope', 'smoothedAverageSlope']),
+    },
+    watch: {
+      rawAverageSlope() {
+        this.formattedRawAverage = this.rawAverageSlope ? `${this.rawAverageSlope}%` : '';
+      },
+      smoothedAverageSlope() {
+        this.formattedSmoothedAverage = this.smoothedAverageSlope ? `${this.smoothedAverageSlope}%` : '';
+      }
+    },
     mounted() {
       this.$nextTick(() => {
         this.legend();
@@ -81,50 +106,69 @@
 <style lang="sass" scoped>
 
   .legend
-    margin: 20px 40px
+    display: flex
     font-size: 20px
-    display: flex
-    align-items: center
-    line-height: 60px
+    margin: 10px 40px
 
-  .legend .swatch
-    width: 40px
-    height: 4px
-    display: inline-block
-    margin-bottom: 6px
-    margin-right: 10px
+    .swatch
+      width: 40px
+      height: 4px
+      margin-right: 16px
+      margin-left: 16px
 
-  .modified .swatch
-    background-color: green
+    .line-legend
+      display: flex
+      align-items: center
 
-  .original .swatch
-    background-color: blue
+    .average-slope
+      margin: 0 40px 10px
+      font-size: 20px
 
-  .legend .original,
-  .legend .modified
-    margin-right: 20px
-    display: inline-block
+    .average-label
+      display: inline-block
 
-  .slope-legend-wrapper
-    display: flex
-    align-items: center
+    .raw-slope,
+    .smoothed-slope
+      display: inline-block
+      min-width: 60px
+      margin-left: 16px
 
-  .slope-label
-    margin-right: 10px
+    .smoothed-slope
+      color: green
 
-  .slope-colormap
-    width: 200px
-    height: 30px
-    margin-right: 20px
+    .raw-slope
+      color: blue
 
-  .key path
-    display: none
+    .modified .swatch
+      background-color: green
 
-  .key line
-    stroke: #000
-    shape-rendering: crispEdges
+    .original .swatch
+      background-color: blue
 
-  .key .tick
-    font-size: 12px
+    .legend .original,
+    .legend .modified
+      margin-right: 20px
+      display: inline-block
+
+    .slope-legend-wrapper
+      display: flex
+
+    .slope-label
+      margin-right: 16px
+
+    .slope-colormap
+      width: 200px
+      align-self: center
+      margin-right: 20px
+
+    .key path
+      display: none
+
+    .key line
+      stroke: #000
+      shape-rendering: crispEdges
+
+    .key .tick
+      font-size: 12px
 
 </style>

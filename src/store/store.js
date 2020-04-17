@@ -6,6 +6,7 @@ import {elevatePoints} from '../utilities/elevatePoints';
 import {setSlopeRange} from '../utilities/setSlopeRange';
 import {flattenPoints} from '../utilities/flattenPoints';
 import {savitzkyGolay} from '../utilities/savitzkyGolay';
+import {shiftSlope} from '../utilities/shiftSlope';
 
 Vue.use(Vuex);
 
@@ -19,9 +20,9 @@ const getDefaultState = () => {
     rawValues: null,
     smoothedValues: null,
     bElevationAdded: false,
-    totalSlope: null,
     totalDistance: null,
-    averageSlope: null,
+    rawAverageSlope: null,
+    smoothedAverageSlope: null,
     selection: null, // Selection is an array containing [startDistance, endDistance]
   };
 };
@@ -93,6 +94,12 @@ export default new Vuex.Store({
       const smoothedValues = flattenPoints(toSmooth, slopeDelta, context.state.selection);
       context.commit('setSmoothedValues', smoothedValues);
     },
+    slopePercentage(context, slopeShift) {
+      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
+      const smoothedValues = shiftSlope(toSmooth, slopeShift, context.state.selection);
+      context.commit('setSmoothedValues', smoothedValues);
+    },
+
     elevate(context, metres) {
       const toElevate = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
       const smoothedValues = elevatePoints(toElevate, metres, context.state.selection);
@@ -121,19 +128,19 @@ export default new Vuex.Store({
       state.description = fileInfo.description;
       state.rawValues = fileInfo.rawValues;
       state.bElevationAdded = fileInfo.bElevationAdded;
-      state.totalSlope = fileInfo.totalSlope;
-      state.totalDistance = fileInfo.totalDistance;
+      state.rawAverageSlope = fileInfo.averageSlope;
+       state.totalDistance = fileInfo.totalDistance;
     },
     setSelection(state, selection) {
       state.selection = selection;
     },
     setSmoothedValues(state, smoothedValues) {
-      state.averageSlope = smoothedValues.averageSlope;
+      state.smoothedAverageSlope = smoothedValues.averageSlope;
       state.smoothedValues = smoothedValues.smoothedValues;
     },
     resetSmoothing(state) {
       state.selection = null;
-      state.averageSlope = null;
+      state.smoothedAverageSlope = null;
       state.smoothedValues = null;
     }
   }
