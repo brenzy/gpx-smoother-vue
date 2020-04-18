@@ -12,6 +12,7 @@ Vue.use(Vuex);
 
 const getDefaultState = () => {
   return {
+    appVersion: process.env.VUE_APP_VERSION || 0,
     isLoading: false,
     loadError: null,
     fileJson: null,

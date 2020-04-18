@@ -32,7 +32,10 @@
           decreased by a fixed percentage.</li>
       <li>Added the display of average slope for original and smoothed data.</li>
     </ul>
-
+    <h3>Version 1.2.0</h3>
+    <ul>
+      <li>Load the application version from the package.json at build time.</li>
+    </ul>
   </div>
 
 </template>
