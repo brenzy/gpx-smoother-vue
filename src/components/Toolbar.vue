@@ -2,7 +2,7 @@
   <div>
      <v-app-bar dark color="primary">
        <v-toolbar-items>
-         <v-btn text to="/">GPX Smoother Version 1.0</v-btn>
+         <v-btn text to="/">GPX Smoother Version {{appVersion}}</v-btn>
        </v-toolbar-items>
       <v-spacer/>
       <v-toolbar-items>
@@ -14,8 +14,11 @@
 </template>
 
 <script>
+  import {mapState} from 'vuex';
+
   export default {
-    name: 'Toolbar'
+    name: 'Toolbar',
+    computed: mapState(['appVersion']),
   };
 </script>
 

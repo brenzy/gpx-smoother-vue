@@ -155,10 +155,13 @@
 
     .slope-label
       margin-right: 16px
+      line-height: 24px
 
+    // The legend fits into the width and height or it's container, so they must be specified
     .slope-colormap
       width: 200px
-      align-self: center
+      height: 40px
+      margin-top: 6px
       margin-right: 20px
 
     .key path
