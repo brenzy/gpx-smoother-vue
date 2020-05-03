@@ -16,8 +16,7 @@ This version of the GPX smoother can be found at: https://www.potter.ca/Biking/s
 ## ToDo List
 
 This is a work in progress...
-- [ ] find a better algorithm to get rid of spikes in the slope
-- [ ] try removing points according to a distance-based criteria in order to smooth the path (see http://www.thescrapyard.org/software/gpxsmooth.html#algorithm)
+- [ ] find a better algorithm to get rid of spikes in the slope (try Kalman smoothing algorithm)
 - [ ] input validation
 - [ ] browser compatibility
 - [ ] map the route

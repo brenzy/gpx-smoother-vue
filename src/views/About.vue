@@ -6,19 +6,24 @@
       favourite trainer software.
     <p/>
     <ul>
-      <li>Box Score Smoothing - uses simple box-score smoothing to smooth the elevation.</li>
-      <li>Savitzky-Golay Smoothing - a more complex smoothing algorithm. </li>
-      <li>Set Range - lets you set the maximum and minimum slope.</li>
-      <li>Flatten - lets you set the maximum change in slope between any two points.</li>
-      <li>Slope Difficulty - Increase or decrease the slope between each set of points by a percentage.</li>
-      <li>Elevate - increases or decreases the elevation of each point by a fixed amount.</li>
+      <li><span class="font-weight-bold">Box Score Smoothing</span> - uses simple box-score smoothing to smooth the elevation.</li>
+      <li><span class="font-weight-bold">Savitzky-Golay Smoothing</span> - a more complex smoothing algorithm. </li>
+      <li><span class="font-weight-bold">Set Range</span> - lets you set the maximum and minimum slope.</li>
+      <li><span class="font-weight-bold">Flatten</span> - lets you set the maximum change in slope between any two points.</li>
+      <li><span class="font-weight-bold">Slope Difficulty</span> - Increase or decrease the slope between each set of points by a percentage.</li>
+      <li><span class="font-weight-bold">Elevate</span> - increases or decreases the elevation of each point by a fixed amount.</li>
     </ul>
     <p>
-      Slide the triangular handles on the smaller graph to select only a portion of the ride to smooth.
+      Slide the <span class="font-weight-bold">triangular handles</span> on the smaller graph to select only a portion of the ride to smooth.
     </p>
     <p>
-      The Decrease Precision checkbox rounds the elevation to 2 decimal places, and the latitude and longitude
-      to 5 decimal places.  Decreasing the precision will produce a smaller file size.
+      The <span class="font-weight-bold">Decrease Precision</span> checkbox rounds the elevation to 2 decimal places, and
+      the latitude and longitude to 5 decimal places.  Decreasing the precision will produce a smaller file size.
+    </p>
+    <p>
+      Use <span class="font-weight-bold">Total Number of Laps</span> to repeat the route.  This functionality will
+      currently only
+      work on GPX files with one track containing one track segment.
     </p>
 
     <h2>Change Log</h2>
@@ -37,6 +42,11 @@
       <li>Load the application version from the package.json at build time.</li>
       <li>Fixed an issue where the slope legend was throwing an error because the height was not initialized
           correctly.</li>
+    </ul>
+    <h3>Version 1.3.0</h3>
+    <ul>
+      <li>Added a quick implementation of lapping.  This will currently only work on files with one track
+          containing one track segment.</li>
     </ul>
   </div>
 
