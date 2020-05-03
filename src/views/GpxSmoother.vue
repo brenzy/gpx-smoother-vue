@@ -117,6 +117,12 @@
         label="Decrease Precision"
         v-model="decreasePrecision"
       />
+      <div class="input-row">
+        <v-text-field
+          label="Total Number of Laps"
+          v-model="numLaps"
+        />
+      </div>
       <v-btn
         @click="onDownload"
         :disabled="!haveSmoothedValues">
@@ -150,7 +156,8 @@ export default {
     gpxFileName: 'smoother.gpx',
     gpxName: '',
     gpxDescription: '',
-    decreasePrecision: false
+    decreasePrecision: false,
+    numLaps: 1
   }),
   computed: {
     ...mapState(['name', 'description', 'fileJson', 'smoothedValues']),
@@ -213,7 +220,8 @@ export default {
         return;
       }
       const smoothedJson = JSON.parse(JSON.stringify(this.fileJson));
-      updateJson(smoothedJson, this.gpxName, this.gpxDescription, this.smoothedValues, this.decreasePrecision);
+      updateJson(smoothedJson, this.gpxName, this.gpxDescription, this.smoothedValues, this.decreasePrecision,
+        this.numLaps);
       let builder = new xml2js.Builder();
       const smoothedGpx = builder.buildObject(smoothedJson);
       this.download(this.gpxFileName, smoothedGpx);

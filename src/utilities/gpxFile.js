@@ -87,7 +87,7 @@ export function parseJson(jsonRoot) {
   };
 }
 
-export function updateJson(jsonRoot, name, desc, newValues, decreasePrecision) {
+export function updateJson(jsonRoot, name, desc, newValues, decreasePrecision, laps) {
   if (!jsonRoot) {
     throw (SAVE_ERRORS.SAVE_ERROR);
   }
@@ -137,6 +137,15 @@ export function updateJson(jsonRoot, name, desc, newValues, decreasePrecision) {
                 trkpt.ele = [decreasePrecision ? Math.floor(point.ele * 100) / 100 : point.ele];
               }
             });
+            if (laps > 1) {
+              const originalLength = trkseg.trkpt.length;
+              for (let lapIndex = 1; lapIndex < laps; lapIndex++) {
+                for (let trkIndex = 0; trkIndex < originalLength; trkIndex++) {
+                  let newTrkpt = JSON.parse(JSON.stringify(trkseg.trkpt[trkIndex]));
+                  trkseg.trkpt.push(newTrkpt);
+                }
+              }
+            }
           }
         });
       }
