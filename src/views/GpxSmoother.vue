@@ -12,17 +12,28 @@
         :error-messages="loadError"
       />
     </div>
-    <div class="instruct">2. Smooth the data:</div>
+    <div class="instruct">2. Click on an apply button to select the type of smoothing:</div>
     <div class="smoother-input">
+      <div class="input-row">
+        <v-btn
+          @click="onSlopeSmoothing"
+          :disabled="!canSmooth">
+          Apply Slope Box-Smoothing
+        </v-btn>
+        <v-text-field
+          label="Number of points to smoother over(odd)"
+          v-model.number="numSlopeSmoothingPoints"
+        />
+      </div>
       <div class="input-row">
         <v-btn
           @click="onSmoothValues"
           :disabled="!canSmooth">
-          Apply Box-Smoothing
+          Apply Elevation Box-Smoothing
         </v-btn>
         <v-text-field
           label="Number of points to smoother over(odd)"
-          v-model="numSmoothingPoints"
+          v-model.number="numSmoothingPoints"
         />
       </div>
       <div class="input-row">
@@ -33,63 +44,82 @@
         </v-btn>
         <v-text-field
           label="Window Size (odd)"
-          v-model="windowSize"
+          v-model.number="windowSize"
         />
         <v-text-field
           label="Derivative"
-          v-model="derivative"
+          v-model.number="derivative"
         />
         <v-text-field
           label="Polynomial (1 to 5)"
-          v-model="polynomial"
+          v-model.number="polynomial"
         />
+      </div>
+      <div class="input-row">
+        <v-btn
+          @click="onKalmanFilter"
+          :disabled="!canSmooth">
+          Apply Kalman Filter
+        </v-btn>
+        <v-text-field
+          label="Process Noise (R)"
+          v-model.number="kalmanR"
+        />
+        <v-text-field
+          label="Measurement Noise (Q)"
+          v-model.number="kalmanQ"
+        />
+        <v-checkbox
+          label="Use Delta Slope"
+          v-model="useDeltaSlope"
+        ></v-checkbox>
       </div>
       <div class="input-row">
         <v-btn
           @click="onSetSlopeRange"
           :disabled="!canSmooth">
-          Set Slope Range
+          Apply Slope Range
         </v-btn>
         <v-text-field
           label="Minimum Slope"
-          v-model="minSlope"
+          v-model.number="minSlope"
         />
         <v-text-field
           label="Maximum Slope"
-          v-model="maxSlope"
+          v-model.number="maxSlope"
         />
       </div>
       <div class="input-row">
         <v-btn
           @click="onFlattenValues"
           :disabled="!canSmooth">
-          Flatten Values
+          Apply Flatten Values
         </v-btn>
         <v-text-field
           label="Maximum Change In Slope Between Points:"
-          v-model="slopeDelta"
+          v-model.number="slopeDelta"
         />
       </div>
       <div class="input-row">
         <v-btn
           @click="onUpdateSlopePercentages"
           :disabled="!canSmooth">
-          Slope Difficulty
+          Apply Slope Difficulty
         </v-btn>
         <v-text-field
           label="Percentage increase or decrease in slope"
-          v-model="slopeShift"
+          v-model.number="slopeShift"
         />
       </div>
       <div class="input-row">
         <v-btn
           @click="onElevateValues"
           :disabled="!canSmooth">
-          Elevate Values
+          Apply Elevate Values
         </v-btn>
         <v-text-field
           label="Shift in metres up or down"
-          v-model="metresShift"
+          v-model.number="metresShift"
         />
       </div>
       <v-btn
@@ -145,14 +175,18 @@ export default {
   data: () => ({
     gpxFile: null,
     numSmoothingPoints: 5,
+    numSlopeSmoothingPoints: 5,
     windowSize: 5,
     derivative: 0,
     polynomial: 3,
     metresShift: 100,
-    slopeDelta: 1,
+    slopeDelta: .3,
     slopeShift: 3,
     minSlope: 0,
     maxSlope: 8,
+    kalmanR: .01,
+    kalmanQ: 3,
+    useDeltaSlope: false,
     gpxFileName: 'smoother.gpx',
     gpxName: '',
     gpxDescription: '',
@@ -180,12 +214,18 @@ export default {
     onFileChange() {
       store.dispatch('load', this.gpxFile);
     },
+    onSlopeSmoothing() {
+      store.dispatch('smoothSlope', this.numSlopeSmoothingPoints);
+    },
     onSmoothValues() {
       store.dispatch('smooth', this.numSmoothingPoints);
     },
     onSavitzyGolay() {
       store.dispatch('savitzkyGolay',
         {windowSize: +this.windowSize, derivative: +this.derivative, polynomial: +this.polynomial});
+    },
+    onKalmanFilter() {
+      store.dispatch('kalmanFilter', {R: this.kalmanR, Q: this.kalmanQ, useDeltaSlope: this.useDeltaSlope});
     },
     onSetSlopeRange() {
       store.dispatch('slopeRange', {minSlope: this.minSlope, maxSlope: this.maxSlope});

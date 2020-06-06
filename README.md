@@ -16,12 +16,12 @@ This version of the GPX smoother can be found at: https://www.potter.ca/Biking/s
 ## ToDo List
 
 This is a work in progress...
-- [ ] find a better algorithm to get rid of spikes in the slope (try Kalman smoothing algorithm)
 - [ ] input validation
-- [ ] browser compatibility
+- [ ] browser compatibility check
 - [ ] map the route
 - [ ] accept more than one file type (fit, tcx, kml)
 - [ ] try some different UI alternatives for less scrolling 
+- [ ] add latitude and longitude to the tooltips to help those who want to edit the file themselves
 
 ## Project setup
 ```
