@@ -7,6 +7,8 @@ import {setSlopeRange} from '../utilities/setSlopeRange';
 import {flattenPoints} from '../utilities/flattenPoints';
 import {savitzkyGolay} from '../utilities/savitzkyGolay';
 import {shiftSlope} from '../utilities/shiftSlope';
+import {kalmanFilter} from '../utilities/kalmanFilter';
+import {slopeSmoothing} from '../utilities/slopeSmoothing';
 
 Vue.use(Vuex);
 
@@ -80,9 +82,19 @@ export default new Vuex.Store({
       const smoothedValues = boxSmoothing(toSmooth, numberofPoints, context.state.selection);
       context.commit('setSmoothedValues', smoothedValues);
     },
+    smoothSlope(context, numberofPoints) {
+      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
+      const smoothedValues = slopeSmoothing(toSmooth, numberofPoints, context.state.selection);
+      context.commit('setSmoothedValues', smoothedValues);
+    },
     savitzkyGolay(context, options) {
       const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
       const smoothedValues = savitzkyGolay(toSmooth, options, context.state.selection);
+      context.commit('setSmoothedValues', smoothedValues);
+    },
+    kalmanFilter(context, options) {
+      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
+      const smoothedValues = kalmanFilter(toSmooth, options, context.state.selection);
       context.commit('setSmoothedValues', smoothedValues);
     },
     slopeRange(context, range) {
