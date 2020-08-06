@@ -8,16 +8,21 @@
 <script>
   import * as d3 from 'd3';
   import {mapState} from 'vuex';
-  import {GraphType, LineTypes} from './chartModel';
+  import {GraphType, LineTypes, UnitType} from './chartModel';
+  import {convertDistance, convertElevation, kmToMiles, metresToFeet} from '@/utilities/unitConversion';
 
   // noinspection JSUnusedGlobalSymbols
   export default {
     name: 'DistanceChart',
     props: {
       graphType: String,
-      colorScale: Function
+      colorScale: Function,
+      graphUnits: UnitType
     },
     data: () => ({
+      defaultDistance: 100000,
+      defaultElevation: 100,
+      defaultSlope: 20,
       dimensions: null,
       width: null,
       height: null,
@@ -25,6 +30,8 @@
       svg: null,
       xScale: null,
       yScale: null,
+      xScaleImperial: null,
+      yScaleImperial: null,
       xAxis: null,
       yAxis: null,
       slopeLine: null,
@@ -68,13 +75,36 @@
           this.setLine(this.smoothedValues, LineTypes.SMOOTHED, true);
         }
       },
+      graphUnits: function() {
+        this.initializeUnits(this.graphUnits);
+        const xAxisScale = (this.graphUnits === UnitType.IMPERIAL) ? this.xScaleImperial : this.xScale;
+        this.xAxis.scale(xAxisScale);
+        this.focus.select('.x.axis').call(this.xAxis);
+        this.xAxisLabel.text(this.xAxisText());
+        const yAxisScale = (this.graphUnits === UnitType.IMPERIAL) ? this.yScaleImperial : this.yScale;
+        this.yAxis.scale(yAxisScale);
+        this.focus.select('.y.axis').call(this.yAxis);
+        this.yAxisLabel.text(this.yAxisText());
+      },
       selection: function(newValue) {
         this.onSelectionUpdate(newValue);
       }
     },
     methods: {
+      initializeUnits(graphUnits) {
+        if (graphUnits === UnitType.METRIC) {
+          this.unitsElevation = 'm';
+          this.unitsDistance = 'km';
+        } else {
+          this.unitsElevation = 'ft';
+          this.unitsDistance = 'mi';
+        }
+      },
       yAxisText() {
-        return (this.graphType === GraphType.SLOPE_DISTANCE) ? 'Slope (%)' : 'Elevation (m)';
+        return (this.graphType === GraphType.SLOPE_DISTANCE) ? 'Slope (%)' : `Elevation (${this.unitsElevation})`;
+      },
+      xAxisText() {
+        return `Distance (${this.unitsDistance})`;
       },
       setDimensions() {
         this.dimensions = {
@@ -88,7 +118,6 @@
         this.svg.attr('height', this.dimensions.height);
       },
       resize() {
-
         // If the chart is hidden, don't bother to redraw it
         if (d3.select('#chart').node().clientWidth === 0) {
           return;
@@ -100,6 +129,8 @@
         // Update the range of the scale with new width/height
         this.xScale.range([0, this.width]);
         this.yScale.range([this.height, 0]);
+        this.xScaleImperial.range([0, this.width]);
+        this.yScaleImperial.range([this.height, 0]);
 
         // Update the axis and text with the new scale
         this.svg.select('.x.axis')
@@ -149,6 +180,7 @@
           return;
         }
         this.xScale.domain(selection);
+        this.xScaleImperial.domain(selection.map(distance => kmToMiles(distance)));
         this.focus.select('.x.axis').call(this.xAxis);
         this.focus.selectAll('path.elevation').attr('d', this.elevationLine);
         this.focus.selectAll('path.slope').attr('d', this.slopeLine);
@@ -174,8 +206,9 @@
             + ' ' + this.xScale(datum.previous.totalDistance) + ',' + this.yScale(this.yScale.domain()[0]);
         });
       },
-      defaultYExtent() {
-        return (this.graphType === GraphType.SLOPE_DISTANCE) ? [-20, 20] : [0, 1400];
+      defaultYExtent(unitType) {
+        return (this.graphType === GraphType.SLOPE_DISTANCE) ? [-this.defaultSlope, this.defaultSlope]
+            : [0, convertElevation(this.defaultElevation, unitType)];
       },
       showOriginal(show) {
         const _this = this;
@@ -192,12 +225,13 @@
       },
       reset() {
         this.yAxisLabel.text(this.yAxisText());
+        this.xAxisLabel.text(this.xAxisText());
         this.focus.selectAll('circle').remove();
         this.focus.selectAll('polygon').remove();
         this.focus.selectAll('path.elevation').remove();
         this.focus.selectAll('path.slope').remove();
-        let yExtent = this.defaultYExtent();
-        this.yScale.domain(yExtent);
+        this.yScale.domain(this.defaultYExtent(UnitType.METRIC));
+        this.yScaleImperial.domain(this.defaultYExtent(UnitType.IMPERIAL));
         this.draw();
       },
       slopeColor(point) {
@@ -286,15 +320,15 @@
       tooltipDisplay(data, index, group) {
         // Populate the tooltip
         let slope = (Math.round(data.slope * 1000) / 10).toString();
-        let distance = (Math.round(data.totalDistance / 10) / 100).toString();
-        let elevation = parseInt(((data.ele * 100) / 100).toString());
+        let distance = (Math.round(convertDistance(data.totalDistance, this.graphUnits) / 10) / 100).toString();
+        let elevation = parseInt(((convertElevation(data.ele, this.graphUnits) * 100) / 100).toString());
         this.tooltip.transition()
           .duration(200)
           .style('opacity', .9);
         this.tooltip.html(
-          '<div>Slope: ' + slope + '%</div>' +
-          '<div>Distance: ' + distance + 'km</div>' +
-          '<div>Elevation: ' + elevation + 'm</div>');
+          `<div>Slope: ${slope}%</div>` +
+          `<div>Distance: ${distance}${this.unitsDistance}</div>` +
+          `<div>Elevation: ${elevation}${this.unitsElevation}</div>`);
 
         // Position the tooltip in the svg
         let bbox = this.graphElement.getBoundingClientRect();
@@ -357,13 +391,16 @@
           } else if (yExtent[0] < 0) {
             yExtent = [yExtent[0], 0];
           } else {
-            yExtent = this.defaultYExtent();
+            yExtent = this.defaultYExtent(UnitType.METRIC);
           }
         }
         this.yScale.domain(yExtent);
+        this.yScaleImperial.domain((this.graphType === GraphType.SLOPE_DISTANCE) ? yExtent :
+          yExtent.map(elevation => metresToFeet(elevation)));
 
         if (!maintainSelection) {
           this.xScale.domain(this.xExtents);
+          this.xScaleImperial.domain(this.xExtents.map(distance => kmToMiles(distance)));
         }
 
         if (this.graphType === GraphType.ELEVATION_PROFILE)
@@ -385,6 +422,7 @@
         this.width = this.dimensions.width;
         this.height = this.dimensions.height;
         this.margin = {top: 20, right: 50, bottom: 30, left: 50};
+        this.initializeUnits(this.graphUnits);
 
         this.setDimensions();
 
@@ -393,32 +431,42 @@
 
         this.xScale = d3.scaleLinear()
           .range([0, this.width])
-          .domain([0, 100000])
+          .domain([0, this.defaultDistance])
           .nice();
-
+        this.xScaleImperial = d3.scaleLinear()
+            .range([0, this.width])
+            .domain([0, kmToMiles(this.defaultDistance)])
+            .nice();
 
         this.yScale = d3.scaleLinear()
           .range([this.height, 0])
-          .domain(this.defaultYExtent())
+          .domain(this.defaultYExtent(UnitType.METRIC))
           .nice();
+        this.yScaleImperial = d3.scaleLinear()
+            .range([this.height, 0])
+            .domain(this.defaultYExtent(UnitType.IMPERIAL))
+            .nice();
 
-        this.xAxis = d3.axisBottom(this.xScale)
-          .tickFormat(d => {
-            return parseInt((d / 100).toString()) / 10;
-          });
-        this.focus.append('g')
+        const xAxisScale = (this.graphUnits === UnitType.IMPERIAL) ? this.xScaleImperial : this.xScale;
+        this.xAxis = d3.axisBottom(xAxisScale)
+            .tickFormat(d => {
+              return parseInt((d / 100).toString()) / 10;
+            });
+
+        let xAxisVis = this.focus.append('g')
           .attr('class', 'x axis')
           .attr('transform', 'translate(0,' + this.height + ')')
-          .call(this.xAxis)
-          .append('text')
-          .attr('class', 'x label')
+          .call(this.xAxis);
+        this.xAxisLabel = xAxisVis.append('text');
+        this.xAxisLabel.attr('class', 'x label')
           .style('text-anchor', 'end')
           .attr('x', this.width)
-          .attr('y', -6)
-          .text('Distance (km)')
+          .attr('y', 24)
+          .text(this.xAxisText())
           .attr('fill', '#000');
 
-        this.yAxis = d3.axisLeft(this.yScale);
+        const yAxisScale = (this.graphUnits === UnitType.IMPERIAL) ? this.yScaleImperial : this.yScale;
+        this.yAxis = d3.axisLeft(yAxisScale);
         let yAxisVis = this.focus.append('g')
           .attr('class', 'y axis')
           .call(this.yAxis);

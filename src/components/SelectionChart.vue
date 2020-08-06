@@ -7,15 +7,20 @@
 <script>
 import * as d3 from 'd3';
 import {mapState} from 'vuex';
-import {GraphType, LineTypes} from './chartModel';
+import {GraphType, LineTypes, UnitType} from './chartModel';
 import store from '../store/store';
+import {convertElevation, kmToMiles, metresToFeet} from '@/utilities/unitConversion';
 
 export default {
   name: 'SelectionChart',
   props: {
-    graphType: String
+    graphType: String,
+    graphUnits: String
   },
   data: () => ({
+    defaultDistance: 100000,
+    defaultElevation: 100,
+    defaultSlope: 20,
     dimensions: null,
     width: null,
     height: null,
@@ -25,7 +30,9 @@ export default {
     miniHeight: null,
     miniSvg: null,
     miniXScale: null,
+    miniXScaleImperial: null,
     miniYScale: null,
+    miniYScaleImperial: null,
     brush: null,
     gBrush: null,
     miniElevationLine: null,
@@ -34,7 +41,9 @@ export default {
     miniYAxis: null,
     displayOriginal: true,
     handle: null,
-    xExtents: null
+    xExtents: null,
+    miniXLabel: null,
+    miniYLabel: null,
   }),
   mounted() {
     window.addEventListener('resize', this.resize);
@@ -65,6 +74,16 @@ export default {
         this.setLine(this.smoothedValues, LineTypes.SMOOTHED, true);
       }
     },
+    graphUnits: function() {
+      const xAxisScale = (this.graphUnits === UnitType.IMPERIAL) ? this.miniXScaleImperial : this.miniXScale;
+      this.miniXAxis.scale(xAxisScale);
+      this.miniSvg.select('.x.axis').call(this.miniXAxis);
+      this.miniXLabel.text(this.xAxisText());
+      const yAxisScale = (this.graphUnits === UnitType.IMPERIAL) ? this.miniYScaleImperial : this.miniYScale;
+      this.miniYAxis.scale(yAxisScale);
+      this.miniSvg.select('.y.axis').call(this.miniYAxis);
+      this.miniYLabel.text(this.yAxisText());
+    },
     selection: function(newValue) {
       if (newValue === null  && this.xScale) {
         this.gBrush.call(this.brush.move, this.xScale.range());
@@ -73,9 +92,11 @@ export default {
   },
   methods: {
     yAxisText() {
-      return this.graphType === GraphType.SLOPE_DISTANCE
-        ? 'Slope (%)'
-        : 'Elevation (m)';
+      const unitsElevation = (this.graphUnits === UnitType.IMPERIAL) ? 'ft' : 'm';
+      return (this.graphType === GraphType.SLOPE_DISTANCE) ? 'Slope (%)' : `Elevation (${unitsElevation})`;
+    },
+    xAxisText() {
+      return `Distance (${(this.graphUnits === UnitType.IMPERIAL) ? 'mi' : 'km'})`;
     },
     setDimensions() {
       this.dimensions = {
@@ -105,7 +126,9 @@ export default {
       // Update the range of the scale with new width/height
       this.xScale.range([0, this.width]);
       this.miniXScale.range([0, this.width]);
+      this.miniXScaleImperial.range([0, this.width]);
       this.miniYScale.range([this.miniHeight, 0]);
+      this.miniYScaleImperial.range([this.miniHeight, 0]);
 
       // Update the mini graph
       this.miniSvg
@@ -159,16 +182,16 @@ export default {
         );
       });
     },
-    defaultYExtent() {
-      return this.graphType === GraphType.SLOPE_DISTANCE
-        ? [-20, 20]
-        : [0, 1400];
+    defaultYExtent(unitType) {
+      return (this.graphType === GraphType.SLOPE_DISTANCE) ? [-this.defaultSlope, this.defaultSlope]
+          : [0, convertElevation(this.defaultElevation, unitType)];
     },
     reset() {
+      this.miniXLabel.text(this.xAxisText());
       this.miniYLabel.text(this.yAxisText());
       this.miniSvg.selectAll('path.elevation').remove();
       this.miniSvg.selectAll('path.slope').remove();
-      let yExtent = this.defaultYExtent();
+      let yExtent = this.defaultYExtent(this.graphUnits);
       this.miniYScale.domain(yExtent);
       this.draw();
     },
@@ -219,6 +242,7 @@ export default {
           return d.totalDistance;
         });
         this.miniXScale.domain(this.xExtents);
+        this.miniXScaleImperial.domain(this.xExtents.map(distance => kmToMiles(distance)));
       } else {
         this.miniSvg.selectAll('path.' + lineType).remove();
       }
@@ -235,10 +259,12 @@ export default {
         } else if (yExtent[0] < 0) {
           yExtent = [yExtent[0], 0];
         } else {
-          yExtent = this.defaultYExtent();
+          yExtent = this.defaultYExtent(UnitType.METRIC);
         }
       }
       this.miniYScale.domain(yExtent);
+      this.miniYScaleImperial.domain((this.graphType === GraphType.SLOPE_DISTANCE) ? yExtent :
+          yExtent.map(elevation => metresToFeet(elevation)));
 
       if (!maintainSelection) {
         this.gBrush.call(this.brush.move, this.xScale.range());
@@ -283,37 +309,47 @@ export default {
       this.miniXScale = d3
         .scaleLinear()
         .range([0, this.width])
-        .domain([0, 100000])
+        .domain([0, this.defaultDistance])
         .nice();
+      this.miniXScaleImperial = d3
+          .scaleLinear()
+          .range([0, this.width])
+          .domain([0, kmToMiles(this.defaultDistance)])
+          .nice();
 
       this.miniYScale = d3
         .scaleLinear()
         .range([this.miniHeight, 0])
-        .domain([0, 1400])
+        .domain([0, this.defaultElevation])
         .nice();
+      this.miniYScaleImperial = d3
+          .scaleLinear()
+          .range([this.miniHeight, 0])
+          .domain([0, metresToFeet(this.defaultElevation)])
+          .nice();
 
+      const xAxisScale = (this.graphUnits === UnitType.IMPERIAL) ? this.miniXScaleImperial : this.miniXScale;
       this.miniXAxis = d3
-        .axisBottom()
-        .scale(this.miniXScale)
-        .tickFormat(d => {
-          return parseInt((d / 100).toString()) / 10;
-        });
+          .axisBottom(xAxisScale)
+          .tickFormat(d => {
+            return parseInt((d / 100).toString()) / 10;
+          });
 
-      this.miniYAxis = d3.axisLeft().scale(this.miniYScale);
-
-      this.gMiniSvg
+      let xAxisVis = this.gMiniSvg
         .append('g')
         .attr('class', 'x axis')
         .attr('transform', 'translate(0,' + this.miniHeight + ')')
-        .call(this.miniXAxis)
+        .call(this.miniXAxis);
+      this.miniXLabel = xAxisVis
         .append('text')
         .attr('class', 'x label')
         .style('text-anchor', 'end')
         .attr('x', this.width)
-        .attr('y', -6)
-        .text('Distance (km)')
+        .attr('y', 24)
+        .text(this.xAxisText())
         .attr('fill', '#000');
 
+      this.miniYAxis = d3.axisLeft().scale(this.miniYScale);
       this.miniYAxisVis = this.gMiniSvg
         .append('g')
         .attr('class', 'y axis')

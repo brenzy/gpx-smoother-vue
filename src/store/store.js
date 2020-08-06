@@ -1,14 +1,14 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import {LOAD_ERRORS, parseJson} from '../utilities/gpxFile';
-import {boxSmoothing} from '../utilities/boxSmoothing';
-import {elevatePoints} from '../utilities/elevatePoints';
-import {setSlopeRange} from '../utilities/setSlopeRange';
-import {flattenPoints} from '../utilities/flattenPoints';
-import {savitzkyGolay} from '../utilities/savitzkyGolay';
-import {shiftSlope} from '../utilities/shiftSlope';
-import {kalmanFilter} from '../utilities/kalmanFilter';
-import {slopeSmoothing} from '../utilities/slopeSmoothing';
+import {LOAD_ERRORS, parseJson} from '@/utilities/gpxFile';
+import {boxSmoothing} from '@/utilities/boxSmoothing';
+import {elevatePoints} from '@/utilities/elevatePoints';
+import {setSlopeRange} from '@/utilities/setSlopeRange';
+import {flattenPoints} from '@/utilities/flattenPoints';
+import {savitzkyGolay} from '@/utilities/savitzkyGolay';
+import {shiftSlope} from '@/utilities/shiftSlope';
+import {kalmanFilter} from '@/utilities/kalmanFilter';
+import {slopeSmoothing} from '@/utilities/slopeSmoothing';
 
 Vue.use(Vuex);
 
@@ -77,14 +77,14 @@ export default new Vuex.Store({
     select(context, selection) {
       context.commit('setSelection', selection);
     },
-    smooth(context, numberofPoints) {
+    smooth(context, numberOfPoints) {
       const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
-      const smoothedValues = boxSmoothing(toSmooth, numberofPoints, context.state.selection);
+      const smoothedValues = boxSmoothing(toSmooth, numberOfPoints, context.state.selection);
       context.commit('setSmoothedValues', smoothedValues);
     },
-    smoothSlope(context, numberofPoints) {
+    smoothSlope(context, numberOfPoints) {
       const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
-      const smoothedValues = slopeSmoothing(toSmooth, numberofPoints, context.state.selection);
+      const smoothedValues = slopeSmoothing(toSmooth, numberOfPoints, context.state.selection);
       context.commit('setSmoothedValues', smoothedValues);
     },
     savitzkyGolay(context, options) {
@@ -112,7 +112,6 @@ export default new Vuex.Store({
       const smoothedValues = shiftSlope(toSmooth, slopeShift, context.state.selection);
       context.commit('setSmoothedValues', smoothedValues);
     },
-
     elevate(context, metres) {
       const toElevate = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
       const smoothedValues = elevatePoints(toElevate, metres, context.state.selection);
@@ -142,7 +141,7 @@ export default new Vuex.Store({
       state.rawValues = fileInfo.rawValues;
       state.bElevationAdded = fileInfo.bElevationAdded;
       state.rawAverageSlope = fileInfo.averageSlope;
-       state.totalDistance = fileInfo.totalDistance;
+      state.totalDistance = fileInfo.totalDistance;
     },
     setSelection(state, selection) {
       state.selection = selection;

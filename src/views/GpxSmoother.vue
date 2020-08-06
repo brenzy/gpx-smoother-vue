@@ -166,7 +166,7 @@
 import store from '../store/store';
 import {mapState} from 'vuex';
 import Charts from '../components/Charts';
-import {updateJson} from '../utilities/gpxFile';
+import {updateJson} from '@/utilities/gpxFile';
 import * as xml2js from 'xml2js';
 
 export default {
@@ -244,7 +244,7 @@ export default {
     },
     download(filename, text) {
       // TODO: Investigate https://github.com/jimmywarting/StreamSaver.js
-      var element = document.createElement('a');
+      const element = document.createElement('a');
       element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
       element.setAttribute('download', filename);
 
