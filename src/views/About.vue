@@ -41,6 +41,10 @@
     </ul>
 
     <h2 class="change-log">Change Log</h2>
+    <h3>Version 1.5.0 - 2020-08-06</h3>
+    <ul>
+      <li>Add the ability to display the chart in metric or imperial.</li>
+    </ul>
     <h3>Version 1.4.0 - 2020-06-06</h3>
     <ul>
       <li>Add box score smoothing for slope.</li>

@@ -9,5 +9,9 @@ export const LineTypes = Object.freeze({
   SMOOTHED: 'modified'
 });
 
+export const UnitType = Object.freeze({
+  METRIC: 'metric',
+  IMPERIAL: 'imperial'
+});
 
 
