@@ -1,10 +1,12 @@
 <template>
-  <div class="about">
+  <v-container fluid class="about">
     <h1>About the GPX Smoother</h1>
     <p>
       The GPX Smoother lets you load a GPX file, and smooth out the elevation, to make it easier to ride in your
       favourite trainer software.
     <p/>
+
+    <h2>Smoothing</h2>
     <p>
       Click on the apply button for one or more of the following algorithms to smooth the data to your liking:
     </p>
@@ -30,17 +32,32 @@
       currently only work on GPX files with one track containing one track segment.
     </p>
 
-    <h2>Planned for Future Releases</h2>
+    <h2>Route Map</h2>
+    <p>
+      Hover over the layers icon in the top-right corner of the map, and select "Route Markers" so see the points on
+      the route. Clicking on a route marker will display information about the point.
+    </p>
+
+    <h2>Updates Planned For Future Releases</h2>
     <ul>
-      <li>input validation.</li>
-      <li>browser compatibility</li>
-      <li>map the route</li>
-      <li>accept more than one file type (fit, tcx, kml)</li>
-      <li>try some different UI alternatives for less scrolling</li>
-      <li>Add latitude and longitude to the tooltips to help those who want to edit the file themselves</li>
+      <li>Input validation.</li>
+      <li>Browser compatibility</li>
+      <li>Accept more file types (fit, tcx, kml)</li>
+      <li>Try some different UI alternatives for less scrolling</li>
+      <li>Editing the route and elevation from the route map</li>
+      <li>Mini elevation chart on the route map</li>
+      <li>Draggable points on the elevation charts</li>
+      <li>Undo/Redo stack</li>
+      <li>Charts code clean-up to get rid of repeated code</li>
+      <li>Vue 3 migration</li>
+      <li>Typescript</li>
     </ul>
 
     <h2 class="change-log">Change Log</h2>
+    <h3>Version 1.6.0 - 2020-08-14</h3>
+    <ul>
+      <li>Add mapping of the route.</li>
+    </ul>
     <h3>Version 1.5.0 - 2020-08-06</h3>
     <ul>
       <li>Add the ability to display the chart in metric or imperial.</li>
@@ -72,9 +89,14 @@
     <ul>
       <li>Added the ability to decrease precision for latitude, longitude, and elevation.</li>
     </ul>
-  </div>
+  </v-container>
 
 </template>
+<script>
+export default {
+  name: 'about',
+};
+</script>
 <style lang="sass" scoped>
   .about
     margin: 48px

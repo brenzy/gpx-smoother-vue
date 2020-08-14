@@ -41,17 +41,24 @@ export default {
     miniYAxis: null,
     displayOriginal: true,
     handle: null,
-    xExtents: null,
     miniXLabel: null,
     miniYLabel: null,
   }),
   mounted() {
     window.addEventListener('resize', this.resize);
-    this.initializeChart();
+    this.$nextTick(() => {
+      this.initializeChart();
+    });
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.resize);
   },
   computed: mapState(['rawValues', 'smoothedValues', 'selection']),
   watch: {
     rawValues(newValue) {
+      if (!this.miniSvg) {
+        return;
+      }
       if (newValue && newValue.length) {
         this.setLine(newValue, LineTypes.ORIGINAL, false);
       } else {
@@ -59,6 +66,9 @@ export default {
       }
     },
     smoothedValues(newValue) {
+      if (!this.miniSvg) {
+        return;
+      }
       if (newValue && newValue.length) {
         this.setLine(newValue, LineTypes.SMOOTHED, true);
       } else if (this.rawValues && this.rawValues.length) {
@@ -66,15 +76,16 @@ export default {
       }
     },
     graphType: function() {
+      if (!this.miniSvg) {
+        return;
+      }
       this.reset();
-      if (this.rawValues) {
-        this.setLine(this.rawValues, LineTypes.ORIGINAL, true);
-      }
-      if (this.smoothedValues) {
-        this.setLine(this.smoothedValues, LineTypes.SMOOTHED, true);
-      }
+      this.drawLines();
     },
     graphUnits: function() {
+      if (!this.miniSvg) {
+        return;
+      }
       const xAxisScale = (this.graphUnits === UnitType.IMPERIAL) ? this.miniXScaleImperial : this.miniXScale;
       this.miniXAxis.scale(xAxisScale);
       this.miniSvg.select('.x.axis').call(this.miniXAxis);
@@ -85,18 +96,25 @@ export default {
       this.miniYLabel.text(this.yAxisText());
     },
     selection: function(newValue) {
+      if (!this.miniSvg) {
+        return;
+      }
       if (newValue === null  && this.xScale) {
         this.gBrush.call(this.brush.move, this.xScale.range());
       }
     }
   },
   methods: {
+    xAxisText() {
+      return `Distance (${(this.graphUnits === UnitType.IMPERIAL) ? 'mi' : 'km'})`;
+    },
     yAxisText() {
       const unitsElevation = (this.graphUnits === UnitType.IMPERIAL) ? 'ft' : 'm';
       return (this.graphType === GraphType.SLOPE_DISTANCE) ? 'Slope (%)' : `Elevation (${unitsElevation})`;
     },
-    xAxisText() {
-      return `Distance (${(this.graphUnits === UnitType.IMPERIAL) ? 'mi' : 'km'})`;
+    defaultYExtent(unitType) {
+      return (this.graphType === GraphType.SLOPE_DISTANCE) ? [-this.defaultSlope, this.defaultSlope]
+          : [0, convertElevation(this.defaultElevation, unitType)];
     },
     setDimensions() {
       this.dimensions = {
@@ -116,7 +134,7 @@ export default {
     },
     resize() {
       // If the chart is hidden, don't bother to redraw it
-      if (d3.select('#mini').node().clientWidth === 0) {
+      if (!this.miniSvg || !d3.select('#mini').node() || d3.select('#mini').node().clientWidth === 0) {
         return;
       }
 
@@ -182,10 +200,6 @@ export default {
         );
       });
     },
-    defaultYExtent(unitType) {
-      return (this.graphType === GraphType.SLOPE_DISTANCE) ? [-this.defaultSlope, this.defaultSlope]
-          : [0, convertElevation(this.defaultElevation, unitType)];
-    },
     reset() {
       this.miniXLabel.text(this.xAxisText());
       this.miniYLabel.text(this.yAxisText());
@@ -194,6 +208,14 @@ export default {
       let yExtent = this.defaultYExtent(this.graphUnits);
       this.miniYScale.domain(yExtent);
       this.draw();
+    },
+    drawLines() {
+      if (this.rawValues) {
+        this.setLine(this.rawValues, LineTypes.ORIGINAL, true);
+      }
+      if (this.smoothedValues) {
+        this.setLine(this.smoothedValues, LineTypes.SMOOTHED, true);
+      }
     },
     brushed() {
       if (d3.event && d3.event.selection) {
@@ -226,7 +248,11 @@ export default {
         .datum(linePoints)
         .attr('d', this.miniElevationLine);
     },
-    setLine(points, lineType, maintainSelection) {
+    getExtents() {
+      if (!this.rawValues || this.rawValues.length === 0) {
+        return {xExtent: [0, this.defaultDistance], yExtent: this.defaultYExtent(UnitType.METRIC)};
+      }
+
       let allPoints;
       if (this.smoothedValues) {
         allPoints = [
@@ -237,15 +263,10 @@ export default {
         allPoints = [ ...this.rawValues ];
       }
 
-      if (lineType === 'original') {
-        this.xExtents = d3.extent(allPoints, d => {
-          return d.totalDistance;
-        });
-        this.miniXScale.domain(this.xExtents);
-        this.miniXScaleImperial.domain(this.xExtents.map(distance => kmToMiles(distance)));
-      } else {
-        this.miniSvg.selectAll('path.' + lineType).remove();
-      }
+      let xExtent = d3.extent(allPoints, d => {
+        return d.totalDistance;
+      });
+
       let yExtent = d3.extent(allPoints, d => {
         if (this.graphType === GraphType.SLOPE_DISTANCE) {
           return parseInt((d.slope * 1000).toString()) / 10;
@@ -262,9 +283,21 @@ export default {
           yExtent = this.defaultYExtent(UnitType.METRIC);
         }
       }
-      this.miniYScale.domain(yExtent);
-      this.miniYScaleImperial.domain((this.graphType === GraphType.SLOPE_DISTANCE) ? yExtent :
-          yExtent.map(elevation => metresToFeet(elevation)));
+      return {xExtent, yExtent};
+    },
+    setLine(points, lineType, maintainSelection) {
+      const extents = this.getExtents();
+      if (lineType === LineTypes.ORIGINAL) {
+        this.miniXScale.domain(extents.xExtent);
+        this.miniXScaleImperial.domain(extents.xExtent.map(distance => kmToMiles(distance)));
+      } else {
+        this.miniSvg.selectAll('path.' + lineType).remove();
+      }
+
+      this.miniYScale.domain(extents.yExtent);
+      this.miniYScaleImperial.domain(this.graphType === GraphType.SLOPE_DISTANCE ?
+          extents.yExtent :
+          extents.yExtent.map(elevation => metresToFeet(elevation)));
 
       if (!maintainSelection) {
         this.gBrush.call(this.brush.move, this.xScale.range());
@@ -281,6 +314,22 @@ export default {
       }
       this.draw();
     },
+    initializeLines() {
+      if (!this.rawValues) {
+        return;
+      }
+      if (this.graphType === GraphType.SLOPE_DISTANCE) {
+        this.createSlopeLine(this.rawValues, LineTypes.ORIGINAL);
+        if (this.smoothedValues) {
+          this.createSlopeLine(this.smoothedValues, LineTypes.SMOOTHED);
+        }
+      } else {
+        this.createElevationLine(this.rawValues, LineTypes.ORIGINAL);
+        if (this.smoothedValues) {
+          this.createElevationLine(this.smoothedValues, LineTypes.SMOOTHED);
+        }
+      }
+    },
     initializeChart() {
       this.miniSvg = d3.select('#mini').append('svg');
 
@@ -292,12 +341,12 @@ export default {
       this.miniHeight = this.miniDimensions.height;
 
       this.setDimensions();
+      const extents = this.getExtents();
 
       this.xScale = d3
         .scaleLinear()
         .range([0, this.width])
-        .domain([0, 100000])
-        .nice();
+        .domain(extents.xExtent);
 
       this.gMiniSvg = this.miniSvg
         .append('g')
@@ -309,24 +358,20 @@ export default {
       this.miniXScale = d3
         .scaleLinear()
         .range([0, this.width])
-        .domain([0, this.defaultDistance])
-        .nice();
+            .domain(extents.xExtent);
       this.miniXScaleImperial = d3
           .scaleLinear()
           .range([0, this.width])
-          .domain([0, kmToMiles(this.defaultDistance)])
-          .nice();
+          .domain(extents.xExtent.map(distance => kmToMiles(distance)));
 
       this.miniYScale = d3
         .scaleLinear()
         .range([this.miniHeight, 0])
-        .domain([0, this.defaultElevation])
-        .nice();
+        .domain(extents.yExtent);
       this.miniYScaleImperial = d3
           .scaleLinear()
           .range([this.miniHeight, 0])
-          .domain([0, metresToFeet(this.defaultElevation)])
-          .nice();
+          .domain(extents.yExtent.map(elevation => metresToFeet(elevation)));
 
       const xAxisScale = (this.graphUnits === UnitType.IMPERIAL) ? this.miniXScaleImperial : this.miniXScale;
       this.miniXAxis = d3
@@ -400,6 +445,7 @@ export default {
 
       // Add a group to keep the lines under the brush
       this.miniLines = this.gMiniSvg.append('g').attr('id', 'lines');
+      this.initializeLines();
 
       this.gBrush = this.gMiniSvg
         .append('g')

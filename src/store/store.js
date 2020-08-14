@@ -15,10 +15,11 @@ Vue.use(Vuex);
 const getDefaultState = () => {
   return {
     appVersion: process.env.VUE_APP_VERSION || 0,
+    selectedGpxFile: null,
     isLoading: false,
     loadError: null,
     fileJson: null,
-    name: null,
+    outputName: null,
     description: null,
     rawValues: null,
     smoothedValues: null,
@@ -54,6 +55,7 @@ export default new Vuex.Store({
           }
           try {
             let fileInfo = parseJson(json);
+            context.commit('setGpxFile', gpxFile);
             context.commit('setFileJson', json);
             context.commit('setFileInfo', fileInfo);
             context.commit('setIsLoading', false);
@@ -125,6 +127,9 @@ export default new Vuex.Store({
     clear (state) {
       Object.assign(state, getDefaultState());
     },
+    setGpxFile (state, gpxFile) {
+      state.selectedGpxFile = gpxFile;
+    },
     setIsLoading (state, isLoading) {
       state.isLoading = isLoading;
     },
@@ -136,7 +141,7 @@ export default new Vuex.Store({
       state.fileJson = fileJson;
     },
     setFileInfo(state, fileInfo) {
-      state.name = fileInfo.name;
+      state.outputName = fileInfo.name;
       state.description = fileInfo.description;
       state.rawValues = fileInfo.rawValues;
       state.bElevationAdded = fileInfo.bElevationAdded;
