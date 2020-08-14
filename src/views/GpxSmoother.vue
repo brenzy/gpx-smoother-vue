@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <v-container fluid>
     <div class="instruct">1. Load a gpx file:</div>
     <div class="file-input">
       <v-file-input
@@ -159,7 +159,7 @@
         Download
       </v-btn>
     </div>
-  </main>
+  </v-container>
 </template>
 
 <script>
@@ -194,7 +194,7 @@ export default {
     numLaps: 1
   }),
   computed: {
-    ...mapState(['name', 'description', 'fileJson', 'smoothedValues']),
+    ...mapState(['selectedGpxFile', 'outputName', 'description', 'fileJson', 'smoothedValues']),
     ...mapState({
       isLoading: state => state.isLoading,
       loadError: state => state.loadError,
@@ -203,12 +203,18 @@ export default {
     }),
   },
   watch: {
-    name(newValue) {
+    outputName(newValue) {
       this.gpxName = newValue;
     },
     description(newValue) {
       this.gpxDescription = newValue;
     }
+  },
+  mounted() {
+    this.gpxFile = this.selectedGpxFile;
+  },
+  activated() {
+    this.gpxFile = this.selectedGpxFile;
   },
   methods: {
     onFileChange() {

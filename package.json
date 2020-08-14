@@ -1,6 +1,6 @@
 {
   "name": "gpx-smoother-vue",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -12,10 +12,11 @@
     "core-js": "^2.6.5",
     "d3": "^5.15.0",
     "kalmanjs": "^1.1.0",
+    "leaflet": "^1.6.0",
     "ml-savitzky-golay-generalized": "^1.1.1",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
-    "vuetify": "^2.1.0",
+    "vuetify": "^2.3.8",
     "vuex": "^3.0.1",
     "xml2js": "^0.4.23"
   },

@@ -1,15 +1,16 @@
 <template>
-  <div class="contact">
+  <v-container class="contact">
     <p>
-      To request changes or report issues, you can find this GPX smoother on github at <a target="_blank" href="https://github.com/brenzy/gpx-smoother-vue">https://github.com/brenzy/gpx-smoother-vue</a>
+      To request features or report issues, you can find this GPX smoother on github at
+      <a target="_blank" href="https://github.com/brenzy/gpx-smoother-vue">https://github.com/brenzy/gpx-smoother-vue</a>
       or drop me a line at <a :href="`mailto:${emailAddress}`">{{ emailAddress }}</a>.
     </p>
-  </div>
+  </v-container>
 </template>
 
 <script>
   export default {
-    name: 'Contact',
+    name: 'contact',
     data: function () {
       return {
         name: 'brendaz',
@@ -17,12 +18,11 @@
       };
     },
     computed: {
-      // a computed getter
       emailAddress: function () {
         return `${this.name}@${this.provider}`;
       }
     }
-  };
+    };
 </script>
 
 <style lang="sass" scoped>

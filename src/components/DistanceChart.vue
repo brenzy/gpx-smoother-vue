@@ -40,15 +40,22 @@
       xAxisLabel: null,
       tooltip: null,
       focus: null,
-      xExtents: null
     }),
     mounted() {
       window.addEventListener('resize', this.resize);
-      this.initializeChart();
+      this.$nextTick(() => {
+        this.initializeChart();
+      });
+    },
+    beforeDestroy() {
+      window.removeEventListener('resize', this.resize);
     },
     computed: mapState(['rawValues', 'selection', 'totalDistance', 'smoothedValues']),
     watch: {
       rawValues(newValue) {
+        if (!this.svg) {
+          return;
+        }
         if (newValue && newValue.length) {
           this.setLine(newValue, LineTypes.ORIGINAL, false);
         } else {
@@ -56,6 +63,9 @@
         }
       },
       smoothedValues(newValue) {
+        if (!this.svg) {
+          return;
+        }
         if (newValue && newValue.length) {
           this.setLine(newValue, LineTypes.SMOOTHED, true);
         } else if (this.rawValues && this.rawValues.length) {
@@ -65,17 +75,16 @@
           }
         }
       },
-      graphType: function(newValue) {
-        this.reset();
-        if (this.rawValues &&
-            (newValue !== GraphType.ELEVATION_PROFILE || !this.smoothedValues)) {
-            this.setLine(this.rawValues, LineTypes.ORIGINAL, true);
+      graphType: function() {
+        if (!this.svg) {
+          return;
         }
-        if (this.smoothedValues) {
-          this.setLine(this.smoothedValues, LineTypes.SMOOTHED, true);
-        }
+        this.redraw();
       },
       graphUnits: function() {
+        if (!this.svg) {
+          return;
+        }
         this.initializeUnits(this.graphUnits);
         const xAxisScale = (this.graphUnits === UnitType.IMPERIAL) ? this.xScaleImperial : this.xScale;
         this.xAxis.scale(xAxisScale);
@@ -87,6 +96,9 @@
         this.yAxisLabel.text(this.yAxisText());
       },
       selection: function(newValue) {
+        if (!this.svg) {
+          return;
+        }
         this.onSelectionUpdate(newValue);
       }
     },
@@ -100,11 +112,15 @@
           this.unitsDistance = 'mi';
         }
       },
+      xAxisText() {
+        return `Distance (${this.unitsDistance})`;
+      },
       yAxisText() {
         return (this.graphType === GraphType.SLOPE_DISTANCE) ? 'Slope (%)' : `Elevation (${this.unitsElevation})`;
       },
-      xAxisText() {
-        return `Distance (${this.unitsDistance})`;
+      defaultYExtent(unitType) {
+        return (this.graphType === GraphType.SLOPE_DISTANCE) ? [-this.defaultSlope, this.defaultSlope]
+            : [0, convertElevation(this.defaultElevation, unitType)];
       },
       setDimensions() {
         this.dimensions = {
@@ -119,7 +135,7 @@
       },
       resize() {
         // If the chart is hidden, don't bother to redraw it
-        if (d3.select('#chart').node().clientWidth === 0) {
+        if (!this.svg || !d3.select('#chart').node() || d3.select('#chart').node().clientWidth === 0) {
           return;
         }
 
@@ -206,10 +222,6 @@
             + ' ' + this.xScale(datum.previous.totalDistance) + ',' + this.yScale(this.yScale.domain()[0]);
         });
       },
-      defaultYExtent(unitType) {
-        return (this.graphType === GraphType.SLOPE_DISTANCE) ? [-this.defaultSlope, this.defaultSlope]
-            : [0, convertElevation(this.defaultElevation, unitType)];
-      },
       showOriginal(show) {
         const _this = this;
         this.displayOriginal = show;
@@ -233,6 +245,19 @@
         this.yScale.domain(this.defaultYExtent(UnitType.METRIC));
         this.yScaleImperial.domain(this.defaultYExtent(UnitType.IMPERIAL));
         this.draw();
+      },
+      redraw() {
+        if (!this.svg) {
+          return;
+        }
+        this.reset();
+        if (this.rawValues &&
+            (this.graphType !== GraphType.ELEVATION_PROFILE || !this.smoothedValues)) {
+          this.setLine(this.rawValues, LineTypes.ORIGINAL, true);
+        }
+        if (this.smoothedValues) {
+          this.setLine(this.smoothedValues, LineTypes.SMOOTHED, true);
+        }
       },
       slopeColor(point) {
         return (this.colorScale(point.slope * 100));
@@ -319,16 +344,20 @@
       },
       tooltipDisplay(data, index, group) {
         // Populate the tooltip
-        let slope = (Math.round(data.slope * 1000) / 10).toString();
-        let distance = (Math.round(convertDistance(data.totalDistance, this.graphUnits) / 10) / 100).toString();
-        let elevation = parseInt(((convertElevation(data.ele, this.graphUnits) * 100) / 100).toString());
+        const slope = (Math.round(data.slope * 1000) / 10).toString();
+        const distance = (Math.round(convertDistance(data.totalDistance, this.graphUnits) / 10) / 100).toString();
+        const elevation = parseInt(((convertElevation(data.ele, this.graphUnits) * 100) / 100).toString());
+        const latitude = (Math.round(data.lat * 1000) / 1000).toString();
+        const longitude = (Math.round(data.long * 1000) / 1000).toString();
         this.tooltip.transition()
           .duration(200)
           .style('opacity', .9);
         this.tooltip.html(
           `<div>Slope: ${slope}%</div>` +
           `<div>Distance: ${distance}${this.unitsDistance}</div>` +
-          `<div>Elevation: ${elevation}${this.unitsElevation}</div>`);
+          `<div>Elevation: ${elevation}${this.unitsElevation}</div>` +
+          `<div>Latitude: ${latitude}</div>` +
+          `<div>Longitude: ${longitude}</div>`);
 
         // Position the tooltip in the svg
         let bbox = this.graphElement.getBoundingClientRect();
@@ -357,7 +386,11 @@
         this.tooltip.style('left', xPos.toString() + 'px');
         this.tooltip.style('top', yPos.toString() + 'px');
       },
-      setLine(points, lineType, maintainSelection) {
+      getExtents() {
+        if (!this.rawValues || this.rawValues.length === 0) {
+          return {xExtent: [0, this.defaultDistance], yExtent: this.defaultYExtent(UnitType.METRIC)};
+        }
+
         let allPoints;
         if (this.smoothedValues) {
           allPoints = [
@@ -367,17 +400,9 @@
         } else {
           allPoints = [ ...this.rawValues ];
         }
-
-        if (lineType === LineTypes.ORIGINAL) {
-          this.xExtents = d3.extent(allPoints, d => {
-            return d.totalDistance;
-          });
-        } else {
-          this.focus.selectAll('circle.' + lineType).remove();
-          this.focus.selectAll('path.' + lineType).remove();
-          this.focus.selectAll('polygon').remove();
-        }
-
+        let xExtent = d3.extent(allPoints, d => {
+          return d.totalDistance;
+        });
         let yExtent = d3.extent(allPoints, d => {
           if (this.graphType === GraphType.SLOPE_DISTANCE) {
             return (parseInt((d.slope * 1000).toString()) / 10);
@@ -394,13 +419,23 @@
             yExtent = this.defaultYExtent(UnitType.METRIC);
           }
         }
-        this.yScale.domain(yExtent);
-        this.yScaleImperial.domain((this.graphType === GraphType.SLOPE_DISTANCE) ? yExtent :
-          yExtent.map(elevation => metresToFeet(elevation)));
+        return {xExtent, yExtent};
+      },
+      setLine(points, lineType, maintainSelection) {
+        const extents = this.getExtents();
+        if (lineType !== LineTypes.ORIGINAL) {
+          this.focus.selectAll('circle.' + lineType).remove();
+          this.focus.selectAll('path.' + lineType).remove();
+          this.focus.selectAll('polygon').remove();
+        }
+
+        this.yScale.domain(extents.yExtent);
+        this.yScaleImperial.domain((this.graphType === GraphType.SLOPE_DISTANCE) ? extents.yExtent :
+            extents.yExtent.map(elevation => metresToFeet(elevation)));
 
         if (!maintainSelection) {
-          this.xScale.domain(this.xExtents);
-          this.xScaleImperial.domain(this.xExtents.map(distance => kmToMiles(distance)));
+          this.xScale.domain(extents.xExtent);
+          this.xScaleImperial.domain(extents.xExtent.map(distance => kmToMiles(distance)));
         }
 
         if (this.graphType === GraphType.ELEVATION_PROFILE)
@@ -414,6 +449,26 @@
           this.showOriginal(false);
         }
         this.draw();
+      },
+      initializeLines() {
+        if (!this.rawValues) {
+          return;
+        }
+        if (this.graphType === GraphType.ELEVATION_PROFILE) {
+          this.createProfileLine(this.smoothedValues ? this.smoothedValues : this.rawValues,
+              this.smoothedValues ? LineTypes.SMOOTHED : LineTypes.ORIGINAL);
+        }
+        else if (this.graphType === GraphType.SLOPE_DISTANCE) {
+          this.createSlopeLine(this.rawValues, LineTypes.ORIGINAL);
+          if (this.smoothedValues) {
+            this.createSlopeLine(this.smoothedValues, LineTypes.SMOOTHED);
+          }
+        } else {
+          this.createElevationLine(this.rawValues, LineTypes.ORIGINAL);
+          if (this.smoothedValues) {
+            this.createElevationLine(this.smoothedValues, LineTypes.SMOOTHED);
+          }
+        }
       },
       initializeChart() {
         this.svg = d3.select('#chart').append('svg');
@@ -429,23 +484,21 @@
         this.focus = this.svg.append('g')
           .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
 
+        const extents = this.getExtents();
+
         this.xScale = d3.scaleLinear()
           .range([0, this.width])
-          .domain([0, this.defaultDistance])
-          .nice();
+          .domain(extents.xExtent);
         this.xScaleImperial = d3.scaleLinear()
             .range([0, this.width])
-            .domain([0, kmToMiles(this.defaultDistance)])
-            .nice();
+            .domain(extents.xExtent.map(distance => kmToMiles(distance)));
 
         this.yScale = d3.scaleLinear()
           .range([this.height, 0])
-          .domain(this.defaultYExtent(UnitType.METRIC))
-          .nice();
+          .domain(extents.yExtent);
         this.yScaleImperial = d3.scaleLinear()
             .range([this.height, 0])
-            .domain(this.defaultYExtent(UnitType.IMPERIAL))
-            .nice();
+            .domain(extents.yExtent.map(elevation => metresToFeet(elevation)));
 
         const xAxisScale = (this.graphUnits === UnitType.IMPERIAL) ? this.xScaleImperial : this.xScale;
         this.xAxis = d3.axisBottom(xAxisScale)
@@ -513,6 +566,8 @@
             return this.yScale(parseInt((d.slope * 1000).toString()) / 10);
           })
           .curve(d3.curveStepBefore);
+
+        this.initializeLines();
       }
     }
   };

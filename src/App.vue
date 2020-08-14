@@ -1,9 +1,11 @@
 <template>
   <v-app>
     <Toolbar/>
-    <v-content>
-      <router-view/>
-    </v-content>
+    <v-main>
+      <keep-alive :exclude="['about', 'contact']">
+        <router-view/>
+      </keep-alive>
+    </v-main>
   </v-app>
 </template>
 
@@ -18,11 +20,15 @@ export default {
 };
 </script>
 
-<style lang="sass">
-  p
-    margin-block-start: 1em
-    margin-block-end: 1em
-    margin-inline-start: 0
-    margin-inline-end: 0
-
+<style>
+  @import "../node_modules/leaflet/dist/leaflet.css";
+  p {
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+  }
+  html {
+    overflow-y: auto;
+  }
 </style>

@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import GpxSmoother from './views/GpxSmoother';
+import GpxSmoother from '@/views/GpxSmoother';
+import RouteMap from '@/views/RouteMap';
 
 Vue.use(Router);
 
@@ -10,6 +11,11 @@ export default new Router({
       path: '/',
       name: 'gpx-smoother',
       component: GpxSmoother
+    },
+    {
+      path: '/route-map',
+      name: 'route-map',
+      component: RouteMap
     },
     {
       path: '/about',
@@ -24,5 +30,8 @@ export default new Router({
       name: 'contact',
       component: () => import(/* webpackChunkName: "contact" */ './views/Contact.vue')
     }
-  ]
+  ],
+  scrollBehavior () {
+    return {x: 0, y: 0};
+  }
 });
