@@ -51,6 +51,10 @@
       <li>Charts code clean-up to get rid of repeated code</li>
       <li>Vue 3 migration</li>
       <li>Typescript</li>
+      <li>Snip the route</li>
+      <li>Reverse the route</li>
+      <li>Zoom and pan on the graphs</li>
+      <li>Zoom to the route on the map</li>
     </ul>
 
     <h2 class="change-log">Change Log</h2>

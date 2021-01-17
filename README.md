@@ -17,11 +17,20 @@ This version of the GPX smoother can be found at: https://www.potter.ca/Biking/s
 
 This is a work in progress...
 - [ ] input validation
-- [ ] browser compatibility check
-- [ ] map the route
+- [ ] browser compatibility check 
 - [ ] accept more than one file type (fit, tcx, kml)
 - [ ] try some different UI alternatives for less scrolling 
-- [ ] add latitude and longitude to the tooltips to help those who want to edit the file themselves
+- [ ] editing the route and elevation from the route map
+- [ ] mini elevation chart on the route map
+- [ ] draggable points on the elevation charts
+- [ ] undo/redo stack
+- [ ] charts code clean-up to get rid of repeated code
+- [ ] Vue 3 migration
+- [ ] typescript
+- [ ] snip the route
+- [ ] reverse the route
+- [ ] zoom and pan on the graphs
+- [ ] zoom to route on the map
 
 ## Project setup
 ```
