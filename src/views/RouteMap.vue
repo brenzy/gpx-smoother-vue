@@ -24,6 +24,10 @@ import {convertDistance, convertElevation} from '@/utilities/unitConversion';
 import {UnitType} from '@/components/chartModel';
 
 const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const ocmlink = '<a href="http://thunderforest.com/">Thunderforest</a>';
+
+// An API key for the cycling map is available from http://thunderforest.com/
+const myApiKey = '';
 
 export default {
   name: 'RouteMap',
@@ -33,6 +37,7 @@ export default {
     routeLayer: null,
     markerLayer: null,
     mapLayer: null,
+    cycleMapLayer: null,
     editIcon: null,
     markers: [],
     polyLine: null,
@@ -52,11 +57,21 @@ export default {
       this.mapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution});
       this.mapLayer.addTo(this.leafletMap);
       this.leafletMap.fitWorld();
+      this.cycleMapLayer = L.tileLayer(
+      `https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=${myApiKey}`, {
+        attribution: `&copy; ${ocmlink}`,
+        maxZoom: 18,
+      }).addTo(this.leafletMap);
       this.routeLayer = L.layerGroup([]);
       this.markerLayer = L.layerGroup([]);
       L.control.layers(
-          {'Street Map': this.mapLayer},
-          {'Route': this.routeLayer, 'Route Markers': this.markerLayer},
+          {
+            'Street Map': this.mapLayer,
+          },
+          {
+            'Cycle Map': this.cycleMapLayer,
+            'Route': this.routeLayer,
+            'Route Markers': this.markerLayer},
       ).addTo(this.leafletMap);
       this.drawRouteLayer();
     });
