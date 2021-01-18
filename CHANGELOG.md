@@ -7,13 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - input validation
 - browser compatibility check
-- map the route
 - accept more than one file type (fit, tcx, kml)
 - try some different UI alternatives for less scrolling
-- add latitude and longitude to the tooltips to help those who want to edit the file themselves
-- display more than one smoothed data graph at a time to be able to compare the algorithms
-- hide or show graphs
-- load the change log into the application on a separate tab
+- editing the route and elevation from the route map
+- mini elevation chart on the route map
+- draggable points on the elevation charts
+- undo/redo stack
+- charts code clean-up to get rid of repeated code
+- Vue 3 migration
+- typescript
+- snip the route
+- reverse the route
+- zoom and pan on the graphs
+- zoom to route on the map
+
+## [1.7.1] - 2021-01-17
+### Changed
+- fix the change log
+
+## [1.7.0] - 2021-01-17
+### Added
+- open cycle map to the map layers
+
+## [1.6.0] - 2020-08-14
+### Added
+- mapping of the route
+
+## [1.5.0] - 2020-08-06
+### Added
+- the ability to display the chart in metric or imperial
 
 ## [1.4.0] - 2020-06-06
 ### Added

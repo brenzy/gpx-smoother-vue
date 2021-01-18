@@ -58,7 +58,7 @@ export default {
       this.mapLayer.addTo(this.leafletMap);
       this.leafletMap.fitWorld();
       this.cycleMapLayer = L.tileLayer(
-      `https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=${myApiKey}`, {
+      `https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png${myApiKey}`, {
         attribution: `&copy; ${ocmlink}`,
         maxZoom: 18,
       }).addTo(this.leafletMap);
