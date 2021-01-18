@@ -58,6 +58,14 @@
     </ul>
 
     <h2 class="change-log">Change Log</h2>
+    <h3>Version 1.7.1 - 2021-01-17</h3>
+    <ul>
+      <li>Updates to the change log.</li>
+    </ul>
+    <h3>Version 1.7.0 - 2021-01-17</h3>
+    <ul>
+      <li>Added open cycle map to the map layers.</li>
+    </ul>
     <h3>Version 1.6.0 - 2020-08-14</h3>
     <ul>
       <li>Add mapping of the route.</li>
