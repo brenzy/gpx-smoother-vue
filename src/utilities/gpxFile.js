@@ -13,6 +13,12 @@ export const SAVE_ERRORS =  {
   SAVE_ERROR: 'Error saving the GPX file.'
 };
 
+function pseudoUUID() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  );
+}
+
 export function parseJson(jsonRoot) {
   if (!jsonRoot) {
     throw (LOAD_ERRORS.INVALID_FILE_FORMAT);
@@ -42,6 +48,12 @@ export function parseJson(jsonRoot) {
               if (!trkpt.$ || !trkpt.$.lat || !trkpt.$.lon) {
                 throw (LOAD_ERRORS.MISSING_LAT_LONG);
               }
+
+              // Create a guid to link the point to the corresponding json.
+              const pointGuid = pseudoUUID();
+              point.guid = pointGuid;
+              trkpt.guid = pointGuid;
+
               point.lat = Number(trkpt.$.lat);
               point.long = Number(trkpt.$.lon);
               if (trkpt.ele && trkpt.ele.length) {
@@ -114,29 +126,38 @@ export function updateJson(jsonRoot, name, desc, newValues, decreasePrecision, l
   if (gpxNode.trk) {
     gpxNode.trk.forEach((trk) => {
       if (trk.trkseg) {
+        let updatedPoints = [];
         trk.trkseg.forEach((trkseg) => {
           if (trkseg.trkpt) {
             trkseg.trkpt.forEach((trkpt) => {
               if (currentPointIndex > newValues.length) {
                 throw (SAVE_ERRORS.SAVE_ERROR);
               }
-              let point = newValues[currentPointIndex++];
+              let point = newValues[currentPointIndex];
               if (!trkpt.$ || !trkpt.$.lat || !trkpt.$.lon) {
                 throw (SAVE_ERRORS.SAVE_ERROR);
               }
-              let lat = Number(trkpt.$.lat);
-              let long = Number(trkpt.$.lon);
-              if (lat !== point.lat || long !== point.long ) {
-                throw (SAVE_ERRORS.SAVE_ERROR);
+              if (trkpt.guid === point.guid) {
+                currentPointIndex++;
+                let newTrkpt = JSON.parse(JSON.stringify(trkpt));
+                let lat = Number(newTrkpt.$.lat);
+                let long = Number(newTrkpt.$.lon);
+                if (lat !== point.lat || long !== point.long ) {
+                  throw (SAVE_ERRORS.SAVE_ERROR);
+                }
+                if (decreasePrecision) {
+                  newTrkpt.$.lat = Math.floor(point.lat * 100000) / 100000;
+                  newTrkpt.$.lon = Math.floor(point.long * 100000) / 100000;
+                }
+                newTrkpt.guid = null;
+                if (newTrkpt.ele && newTrkpt.ele.length) {
+                  newTrkpt.ele = [decreasePrecision ? Math.floor(point.ele * 100) / 100 : point.ele];
+                }
+                updatedPoints.push(newTrkpt);
               }
-              if (decreasePrecision) {
-                trkpt.$.lat = Math.floor(point.lat * 100000) / 100000;
-                trkpt.$.lon = Math.floor(point.long * 100000) / 100000;
-              }
-              if (trkpt.ele && trkpt.ele.length) {
-                trkpt.ele = [decreasePrecision ? Math.floor(point.ele * 100) / 100 : point.ele];
-              }
+
             });
+            trkseg.trkpt = updatedPoints;
             if (laps > 1) {
               const originalLength = trkseg.trkpt.length;
               for (let lapIndex = 1; lapIndex < laps; lapIndex++) {

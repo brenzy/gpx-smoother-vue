@@ -122,6 +122,33 @@
           v-model.number="metresShift"
         />
       </div>
+      <div class="input-row">
+        <v-btn
+            @click="onSavitzyGolayWithDeletion"
+            :disabled="!canSmooth">
+          Savitzky-Golay With Deletion
+        </v-btn>
+        <v-text-field
+            label="Window Size (odd)"
+            v-model.number="deletionWindowSize"
+        />
+        <v-text-field
+            label="Derivative"
+            v-model.number="deletionDerivative"
+        />
+        <v-text-field
+            label="Polynomial (1 to 5)"
+            v-model.number="deletionPolynomial"
+        />
+        <v-text-field
+            label="Deletion Threshold (metres)"
+            v-model.number="deletionElevationThreshold"
+        />
+        <v-text-field
+            label="Deletion Threshold (slope)"
+            v-model.number="deletionSlopeThreshold"
+        />
+      </div>
       <v-btn
         @click="onResetData"
         :disabled="!haveSmoothedValues">
@@ -191,7 +218,12 @@ export default {
     gpxName: '',
     gpxDescription: '',
     decreasePrecision: false,
-    numLaps: 1
+    numLaps: 1,
+    deletionWindowSize: 5,
+    deletionDerivative: 0,
+    deletionPolynomial: 3,
+    deletionElevationThreshold: 200,
+    deletionSlopeThreshold: 20
   }),
   computed: {
     ...mapState(['selectedGpxFile', 'outputName', 'description', 'fileJson', 'smoothedValues']),
@@ -244,6 +276,17 @@ export default {
     },
     onElevateValues() {
       store.dispatch('elevate', this.metresShift);
+    },
+    onSavitzyGolayWithDeletion() {
+      store.dispatch('savitzkyGolayWithDeletion',
+          {
+            windowSize: +this.deletionWindowSize,
+            derivative: +this.deletionDerivative,
+            polynomial: +this.deletionPolynomial,
+            elevationThreshold: this.deletionElevationThreshold,
+            slopeThreshold: this.deletionSlopeThreshold
+          });
+
     },
     onResetData() {
       store.dispatch('resetSmoothing');

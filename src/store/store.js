@@ -9,6 +9,7 @@ import {savitzkyGolay} from '@/utilities/savitzkyGolay';
 import {shiftSlope} from '@/utilities/shiftSlope';
 import {kalmanFilter} from '@/utilities/kalmanFilter';
 import {slopeSmoothing} from '@/utilities/slopeSmoothing';
+import {savitzkyGolayWithDeletion} from '@/utilities/savitzkyGolayWithDeletion';
 
 Vue.use(Vuex);
 
@@ -92,6 +93,11 @@ export default new Vuex.Store({
     savitzkyGolay(context, options) {
       const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
       const smoothedValues = savitzkyGolay(toSmooth, options, context.state.selection);
+      context.commit('setSmoothedValues', smoothedValues);
+    },
+    savitzkyGolayWithDeletion(context, options) {
+      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
+      const smoothedValues = savitzkyGolayWithDeletion(toSmooth, options, context.state.selection);
       context.commit('setSmoothedValues', smoothedValues);
     },
     kalmanFilter(context, options) {
