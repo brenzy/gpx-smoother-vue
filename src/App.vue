@@ -6,17 +6,27 @@
         <router-view/>
       </keep-alive>
     </v-main>
+    <v-overlay :value="isProcessing" opacity=".35">
+      <div class="wait-text">PROCESSING...</div>
+    </v-overlay>
   </v-app>
 </template>
 
 <script>
 import Toolbar from './components/Toolbar';
+import {mapState} from 'vuex';
 export default {
   name: 'App',
   components: {Toolbar},
   data: () => ({
     //
   }),
+  computed: {
+    ...mapState(['isSmoothingInProgress']),
+    ...mapState({
+      isProcessing: state => state.isLoading || state.isSmoothingInProgress,
+    }),
+  }
 };
 </script>
 
@@ -30,5 +40,9 @@ export default {
   }
   html {
     overflow-y: auto;
+  }
+  .wait-text {
+    font-size: 60px;
+    color: white;
   }
 </style>

@@ -23,7 +23,7 @@ This is a work in progress...
 - [ ] editing the route and elevation from the route map
 - [ ] mini elevation chart on the route map
 - [ ] draggable points on the elevation charts
-- [ ] undo/redo stack
+- [ ] edit and delete on the undo/redo stack
 - [ ] charts code clean-up to get rid of repeated code
 - [ ] Vue 3 migration
 - [ ] typescript
@@ -31,6 +31,7 @@ This is a work in progress...
 - [ ] reverse the route
 - [ ] zoom and pan on the graphs
 - [ ] zoom to route on the map
+- [ ] web worker for long-running processes
 
 ## Project setup
 ```

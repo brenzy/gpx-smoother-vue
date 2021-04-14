@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Router from 'vue-router';
 import GpxSmoother from '@/views/GpxSmoother';
 import RouteMap from '@/views/RouteMap';
+import History from '@/views/History';
 
 Vue.use(Router);
 
@@ -16,6 +17,11 @@ export default new Router({
       path: '/route-map',
       name: 'route-map',
       component: RouteMap
+    },
+    {
+      path: '/history',
+      name: 'history',
+      component: History
     },
     {
       path: '/about',

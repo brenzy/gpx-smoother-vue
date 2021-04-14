@@ -10,6 +10,7 @@ import {mapState} from 'vuex';
 import {GraphType, LineTypes, UnitType} from './chartModel';
 import store from '../store/store';
 import {convertElevation, kmToMiles, metresToFeet} from '@/utilities/unitConversion';
+import {equals} from 'ramda';
 
 export default {
   name: 'SelectionChart',
@@ -220,7 +221,11 @@ export default {
     brushed() {
       if (d3.event && d3.event.selection) {
         const newSelection = d3.event.selection.map(this.miniXScale.invert);
-        store.dispatch('select', newSelection);
+        // This gets called on a resize to redraw the brush, so we need to check
+        // if the selection has actually changed before updating the selection
+        if (!equals(this.selection, newSelection)) {
+          store.dispatch('select', newSelection);
+        }
         this.drawSelectionHandles(newSelection);
       }
     },
@@ -429,7 +434,6 @@ export default {
         })
         .curve(d3.curveStepBefore);
 
-      store.dispatch('select', this.miniXScale.domain());
       this.brush = d3
         .brushX()
         .extent([
@@ -465,7 +469,8 @@ export default {
         .attr('cursor', 'ew-resize')
         .attr('d', triangleShape);
 
-      this.gBrush.call(this.brush.move, this.xScale.range());
+      const selection = (this.selection === null) ? this.xScale.range() : this.selection.map(this.miniXScale);
+      this.gBrush.call(this.brush.move, selection);
     }
   }
 };

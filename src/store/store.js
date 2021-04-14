@@ -14,9 +14,11 @@ Vue.use(Vuex);
 
 const getDefaultState = () => {
   return {
+    redoStack: [],
     appVersion: process.env.VUE_APP_VERSION || 0,
     selectedGpxFile: null,
     isLoading: false,
+    isSmoothingInProgress: false,
     loadError: null,
     fileJson: null,
     outputName: null,
@@ -79,45 +81,68 @@ export default new Vuex.Store({
     select(context, selection) {
       context.commit('setSelection', selection);
     },
-    smooth(context, numberOfPoints) {
+    addOperation(context, operation) {
+      context.commit('addOperation', operation);
+      context.dispatch('doOperation', operation);
+    },
+    async doOperation(context, operation) {
+      if (!operation.enabled) {
+        return;
+      }
       const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
-      const smoothedValues = boxSmoothing(toSmooth, numberOfPoints, context.state.selection);
+      let smoothedValues;
+      switch (operation.name) {
+        case 'smooth': {
+          smoothedValues = boxSmoothing(toSmooth, operation.numberOfPoints, operation.selection);
+          break;
+        }
+        case 'smoothSlope': {
+          smoothedValues = slopeSmoothing(toSmooth, operation.numberOfPoints, operation.selection);
+          break;
+        }
+        case 'savitzkyGolay': {
+          smoothedValues = savitzkyGolay(toSmooth, operation, operation.selection);
+          break;
+        }
+        case 'kalmanFilter': {
+          smoothedValues = kalmanFilter(toSmooth, operation, operation.selection);
+          break;
+        }
+        case 'slopeRange': {
+          smoothedValues = setSlopeRange(toSmooth, operation.range, operation.selection);
+          break;
+        }
+        case 'flatten': {
+          smoothedValues = flattenPoints(toSmooth, operation.slopeDelta, operation.selection);
+          break;
+        }
+        case 'slopePercentage': {
+          smoothedValues = shiftSlope(toSmooth, operation.slopeShift, operation.selection);
+          break;
+        }
+        case 'elevate': {
+          smoothedValues = elevatePoints(toSmooth, operation.metres, operation.selection);
+          break;
+        }
+      }
       context.commit('setSmoothedValues', smoothedValues);
     },
-    smoothSlope(context, numberOfPoints) {
-      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
-      const smoothedValues = slopeSmoothing(toSmooth, numberOfPoints, context.state.selection);
-      context.commit('setSmoothedValues', smoothedValues);
+    async doOperations(context) {
+      context.commit('resetSmoothingData');
+      for (let index = 0; index < context.state.redoStack.length; index++) {
+        await context.dispatch('doOperation', context.state.redoStack[index]);
+      }
+      context.commit('endSmoothing');
     },
-    savitzkyGolay(context, options) {
-      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
-      const smoothedValues = savitzkyGolay(toSmooth, options, context.state.selection);
-      context.commit('setSmoothedValues', smoothedValues);
+    async redoOperations(context) {
+      context.commit('startSmoothing');
+      // A web-worker would be an improvement over a set-timeout here
+      setTimeout(() => {
+        context.dispatch('doOperations');
+      });
     },
-    kalmanFilter(context, options) {
-      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
-      const smoothedValues = kalmanFilter(toSmooth, options, context.state.selection);
-      context.commit('setSmoothedValues', smoothedValues);
-    },
-    slopeRange(context, range) {
-      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
-      const smoothedValues = setSlopeRange(toSmooth, range, context.state.selection);
-      context.commit('setSmoothedValues', smoothedValues);
-    },
-    flatten(context, slopeDelta) {
-      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
-      const smoothedValues = flattenPoints(toSmooth, slopeDelta, context.state.selection);
-      context.commit('setSmoothedValues', smoothedValues);
-    },
-    slopePercentage(context, slopeShift) {
-      const toSmooth = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
-      const smoothedValues = shiftSlope(toSmooth, slopeShift, context.state.selection);
-      context.commit('setSmoothedValues', smoothedValues);
-    },
-    elevate(context, metres) {
-      const toElevate = context.state.smoothedValues ? context.state.smoothedValues : context.state.rawValues;
-      const smoothedValues = elevatePoints(toElevate, metres, context.state.selection);
-      context.commit('setSmoothedValues', smoothedValues);
+    toggleOperation(context, operation) {
+      context.commit('toggleOperation', operation);
     },
     resetSmoothing(context) {
       context.commit('resetSmoothing');
@@ -159,6 +184,29 @@ export default new Vuex.Store({
       state.selection = null;
       state.smoothedAverageSlope = null;
       state.smoothedValues = null;
+      state.redoStack = [];
+    },
+    resetSmoothingData(state) {
+      state.smoothedAverageSlope = null;
+      state.smoothedValues = null;
+    },
+    addOperation(state, operation) {
+      state.redoStack.push(operation);
+    },
+    toggleOperation(state, operation) {
+      // find the operation in the redoStack
+      const operationIndex = state.redoStack.findIndex(element => element.id === operation.id);
+      const toggled = {
+        ...operation,
+        enabled: !operation.enabled
+      };
+      Vue.set(state.redoStack, operationIndex, toggled);
+    },
+    startSmoothing(state) {
+      state.isSmoothingInProgress = true;
+    },
+    endSmoothing(state) {
+      state.isSmoothingInProgress = false;
     }
   }
 });
