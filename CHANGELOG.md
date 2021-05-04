@@ -4,22 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-- input validation
-- browser compatibility check
-- accept more than one file type (fit, tcx, kml)
-- try some different UI alternatives for less scrolling
-- editing the route and elevation from the route map
-- mini elevation chart on the route map
-- draggable points on the elevation charts
-- undo/redo stack
-- charts code clean-up to get rid of repeated code
-- Vue 3 migration
-- typescript
-- snip the route
-- reverse the route
-- zoom and pan on the graphs
-- zoom to route on the map
+## [1.8.0] - 2021-05-04
+### Added
+- added an undo/redo stack
+- added an overlay while loading or processing
 
 ## [1.7.1] - 2021-01-17
 ### Changed

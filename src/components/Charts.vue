@@ -13,12 +13,15 @@
       <v-btn :value="graphTypes.SLOPE_DISTANCE">Slope Chart</v-btn>
       <v-btn :value="graphTypes.ELEVATION_PROFILE">Elevation Profile</v-btn>
     </v-btn-toggle>
-    <DistanceChart
-      v-if="isActive"
-      :graph-type="graphType"
-      :color-scale="colorScale"
-      :graph-units="graphUnits"
-    ></DistanceChart>
+    <div class="distance-chart">
+      <DistanceChart
+          v-if="isActive"
+          :graph-type="graphType"
+          :color-scale="colorScale"
+          :graph-units="graphUnits"
+          :selection="selection"
+      ></DistanceChart>
+    </div>
     <Legend
       :graph-type="graphType"
       :color-scale="colorScale"
@@ -38,6 +41,7 @@
   import * as d3 from 'd3';
   import Legend from './Legend';
   import {UnitType} from '@/components/chartModel';
+  import {mapState} from 'vuex';
 
   export default {
     name: 'Charts',
@@ -49,6 +53,9 @@
       colorScale: null,
       graphUnits: UnitType.METRIC
     }),
+    computed: {
+      ...mapState(['selection']),
+    },
     mounted() {
       if (localStorage.graphUnits) {
         this.graphUnits = localStorage.graphUnits === UnitType.IMPERIAL ? UnitType.IMPERIAL : UnitType.METRIC ;
@@ -77,4 +84,6 @@
     margin: 20px 20px 0 20px
   .chart-type-group
     margin: 0 0 20px 20px
+  .distance-chart
+    height: 500px
 </style>

@@ -124,7 +124,7 @@
       </div>
       <v-btn
         @click="onResetData"
-        :disabled="!haveSmoothedValues">
+        :disabled="!canSmooth">
         Reset the Data
       </v-btn>
     </div>
@@ -155,7 +155,7 @@
       </div>
       <v-btn
         @click="onDownload"
-        :disabled="!haveSmoothedValues">
+        :disabled="!canSmooth">
         Download
       </v-btn>
     </div>
@@ -168,6 +168,7 @@ import {mapState} from 'vuex';
 import Charts from '../components/Charts';
 import {updateJson} from '@/utilities/gpxFile';
 import * as xml2js from 'xml2js';
+import {generateUUID} from '@/utilities/generateUUID';
 
 export default {
   name: 'GpxSmoother',
@@ -194,12 +195,11 @@ export default {
     numLaps: 1
   }),
   computed: {
-    ...mapState(['selectedGpxFile', 'outputName', 'description', 'fileJson', 'smoothedValues']),
+    ...mapState(['selectedGpxFile', 'outputName', 'description', 'fileJson', 'selection', 'smoothedValues']),
     ...mapState({
       isLoading: state => state.isLoading,
       loadError: state => state.loadError,
       canSmooth: state => (state.rawValues !== null && state.rawValues.length > 0),
-      haveSmoothedValues: state => (state.rawValues !== null && state.smoothedValues !== null)
     }),
   },
   watch: {
@@ -220,30 +220,39 @@ export default {
     onFileChange() {
       store.dispatch('load', this.gpxFile);
     },
+    addOperation(name, parameters) {
+      store.dispatch('addOperation', {
+        name,
+        ...parameters,
+        selection: this.selection,
+        enabled: true,
+        id: generateUUID()
+      });
+    },
     onSlopeSmoothing() {
-      store.dispatch('smoothSlope', this.numSlopeSmoothingPoints);
+      this.addOperation('smoothSlope', {numberOfPoints: this.numSlopeSmoothingPoints});
     },
     onSmoothValues() {
-      store.dispatch('smooth', this.numSmoothingPoints);
+      this.addOperation('smooth', {numberOfPoints: this.numSmoothingPoints});
     },
     onSavitzyGolay() {
-      store.dispatch('savitzkyGolay',
-        {windowSize: +this.windowSize, derivative: +this.derivative, polynomial: +this.polynomial});
+      this.addOperation('savitzkyGolay', {windowSize: +this.windowSize, derivative: +this.derivative,
+        polynomial: +this.polynomial});
     },
     onKalmanFilter() {
-      store.dispatch('kalmanFilter', {R: this.kalmanR, Q: this.kalmanQ, useDeltaSlope: this.useDeltaSlope});
+      this.addOperation('kalmanFilter', {R: this.kalmanR, Q: this.kalmanQ, useDeltaSlope: this.useDeltaSlope});
     },
     onSetSlopeRange() {
-      store.dispatch('slopeRange', {minSlope: this.minSlope, maxSlope: this.maxSlope});
+      this.addOperation('slopeRange', {range: {minSlope: this.minSlope, maxSlope: this.maxSlope}});
     },
     onFlattenValues() {
-      store.dispatch('flatten', this.slopeDelta);
-    },
+      this.addOperation('flatten', {slopeDelta: this.slopeDelta});
+     },
     onUpdateSlopePercentages() {
-      store.dispatch('slopePercentage', this.slopeShift);
+      this.addOperation('slopePercentage', {slopeShift: this.slopeShift});
     },
     onElevateValues() {
-      store.dispatch('elevate', this.metresShift);
+      this.addOperation('elevate', {metres: this.metresShift});
     },
     onResetData() {
       store.dispatch('resetSmoothing');

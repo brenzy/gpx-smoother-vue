@@ -2,6 +2,7 @@
   <v-app-bar app dark color="primary">
     <v-toolbar-items>
       <v-btn text to="/">GPX Smoother Version {{ appVersion }}</v-btn>
+      <v-btn text to="/history">Smoothing History</v-btn>
       <v-btn text to="/route-map">Route Map</v-btn>
     </v-toolbar-items>
     <v-spacer/>

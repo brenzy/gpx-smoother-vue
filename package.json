@@ -14,6 +14,7 @@
     "kalmanjs": "^1.1.0",
     "leaflet": "^1.6.0",
     "ml-savitzky-golay-generalized": "^1.1.1",
+    "ramda": "^0.27.1",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
     "vuetify": "^2.3.8",

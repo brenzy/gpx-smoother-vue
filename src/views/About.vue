@@ -32,6 +32,9 @@
       currently only work on GPX files with one track containing one track segment.
     </p>
 
+    <h2>Smoothing History</h2>
+    <p>Use the checkboxes to add or remove a smoothing operation.</p>
+
     <h2>Route Map</h2>
     <p>
       Hover over the layers icon in the top-right corner of the map, and select "Route Markers" so see the points on
@@ -47,7 +50,7 @@
       <li>Editing the route and elevation from the route map</li>
       <li>Mini elevation chart on the route map</li>
       <li>Draggable points on the elevation charts</li>
-      <li>Undo/Redo stack</li>
+      <li>Edit and delete on the undo/redo stack</li>
       <li>Charts code clean-up to get rid of repeated code</li>
       <li>Vue 3 migration</li>
       <li>Typescript</li>
@@ -55,9 +58,17 @@
       <li>Reverse the route</li>
       <li>Zoom and pan on the graphs</li>
       <li>Zoom to the route on the map</li>
+      <li>Web worker for long-running processes for proper wait cursor</li>
     </ul>
 
     <h2 class="change-log">Change Log</h2>
+
+    <h3>Version 1.8.0 - 2021-05-04</h3>
+    <ul>
+      <li>Added an undo/redo stack.</li>
+      <li>Added an overlay while loading or processing.</li>
+    </ul>
+
     <h3>Version 1.7.1 - 2021-01-17</h3>
     <ul>
       <li>Updates to the change log.</li>

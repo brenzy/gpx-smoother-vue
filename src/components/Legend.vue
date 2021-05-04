@@ -40,20 +40,13 @@
       colorScale: Function
     },
     data: () => ({
-      graphTypes: GraphType,
-      formattedRawAverage: '',
-      formattedSmoothedAverage: ''
+      graphTypes: GraphType
     }),
     computed: {
-      ...mapState(['rawAverageSlope', 'smoothedAverageSlope']),
-    },
-    watch: {
-      rawAverageSlope() {
-        this.formattedRawAverage = this.rawAverageSlope ? `${this.rawAverageSlope}%` : '';
-      },
-      smoothedAverageSlope() {
-        this.formattedSmoothedAverage = this.smoothedAverageSlope ? `${this.smoothedAverageSlope}%` : '';
-      }
+      ...mapState({
+        formattedRawAverage: state => state.rawAverageSlope ? `${state.rawAverageSlope}%` : '',
+        formattedSmoothedAverage: state => state.smoothedAverageSlope ? `${state.smoothedAverageSlope}%` : '',
+      }),
     },
     mounted() {
       this.$nextTick(() => {

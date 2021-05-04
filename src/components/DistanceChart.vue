@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <div id="chart">
-    </div>
+  <div id="chart">
   </div>
 </template>
 
@@ -11,13 +9,13 @@
   import {GraphType, LineTypes, UnitType} from './chartModel';
   import {convertDistance, convertElevation, kmToMiles, metresToFeet} from '@/utilities/unitConversion';
 
-  // noinspection JSUnusedGlobalSymbols
   export default {
     name: 'DistanceChart',
     props: {
       graphType: String,
       colorScale: Function,
-      graphUnits: UnitType
+      graphUnits: UnitType,
+      selection: Array
     },
     data: () => ({
       defaultDistance: 100000,
@@ -49,8 +47,11 @@
     },
     beforeDestroy() {
       window.removeEventListener('resize', this.resize);
+      if (this.tooltip) {
+        this.tooltip.remove();
+      }
     },
-    computed: mapState(['rawValues', 'selection', 'totalDistance', 'smoothedValues']),
+    computed: mapState(['rawValues', 'totalDistance', 'smoothedValues']),
     watch: {
       rawValues(newValue) {
         if (!this.svg) {
@@ -99,7 +100,7 @@
         if (!this.svg) {
           return;
         }
-        this.onSelectionUpdate(newValue);
+        this.redrawSelection(newValue);
       }
     },
     methods: {
@@ -163,6 +164,8 @@
           .attr('width', this.width)
           .attr('y', -this.margin.top)
           .attr('height', this.height + this.margin.top + this.margin.bottom); // Leave some room at the top and bottom
+
+        this.redrawSelection(this.selection);
       },
       draw() {
         this.focus.select('.x.axis').call(this.xAxis);
@@ -191,12 +194,11 @@
             + ' ' + this.xScale(datum.previous.totalDistance) + ',' + this.yScale(this.yScale.domain()[0]);
         });
       },
-      onSelectionUpdate(selection) {
-        if (!selection) {
-          return;
+      redrawSelection(selection) {
+        if (selection) {
+          this.xScale.domain(selection);
+          this.xScaleImperial.domain(selection.map(distance => kmToMiles(distance)));
         }
-        this.xScale.domain(selection);
-        this.xScaleImperial.domain(selection.map(distance => kmToMiles(distance)));
         this.focus.select('.x.axis').call(this.xAxis);
         this.focus.selectAll('path.elevation').attr('d', this.elevationLine);
         this.focus.selectAll('path.slope').attr('d', this.slopeLine);
@@ -487,11 +489,17 @@
         const extents = this.getExtents();
 
         this.xScale = d3.scaleLinear()
-          .range([0, this.width])
-          .domain(extents.xExtent);
+          .range([0, this.width]);
         this.xScaleImperial = d3.scaleLinear()
-            .range([0, this.width])
-            .domain(extents.xExtent.map(distance => kmToMiles(distance)));
+            .range([0, this.width]);
+
+        if (this.selection) {
+          this.xScale.domain(this.selection);
+          this.xScaleImperial.domain(this.selection.map(distance => kmToMiles(distance)));
+        } else {
+          this.xScale.domain(extents.xExtent);
+          this.xScaleImperial.domain(extents.xExtent.map(distance => kmToMiles(distance)));
+        }
 
         this.yScale = d3.scaleLinear()
           .range([this.height, 0])
@@ -543,8 +551,7 @@
         this.focus.append('g')
           .attr('clip-path', 'url(#clip)');
 
-        // Get the position of the graph so we can set the
-        // the offset of the tooltip
+        // Get the position of the graph element so we can set the offset of the tooltip
         this.graphElement = this.svg.node();
 
         this.tooltip = d3.select('body').append('div')
@@ -586,7 +593,7 @@
   #chart
     font: 10px sans-serif
     width: 100%
-    height: 500px
+    height: 100%
 
   .axis path,
   .axis line
