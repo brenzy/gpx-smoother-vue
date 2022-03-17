@@ -9,6 +9,7 @@ import {savitzkyGolay} from '@/utilities/savitzkyGolay';
 import {shiftSlope} from '@/utilities/shiftSlope';
 import {kalmanFilter} from '@/utilities/kalmanFilter';
 import {slopeSmoothing} from '@/utilities/slopeSmoothing';
+import {updateTimeIntervals} from '@/utilities/updateTimeIntervals';
 
 Vue.use(Vuex);
 
@@ -29,6 +30,7 @@ const getDefaultState = () => {
     totalDistance: null,
     rawAverageSlope: null,
     smoothedAverageSlope: null,
+    saveTime: false,
     selection: null, // Selection is an array containing [startDistance, endDistance]
   };
 };
@@ -124,6 +126,12 @@ export default new Vuex.Store({
           smoothedValues = elevatePoints(toSmooth, operation.metres, operation.selection);
           break;
         }
+        case 'updateTimeIntervals': {
+          context.commit('saveTime', true);
+          smoothedValues = updateTimeIntervals(toSmooth,
+            context.state.smoothedAverageSlope ? context.state.smoothedAverageSlope : context.state.rawAverageSlope);
+          break;
+        }
       }
       context.commit('setSmoothedValues', smoothedValues);
     },
@@ -170,6 +178,7 @@ export default new Vuex.Store({
       state.description = fileInfo.description;
       state.rawValues = fileInfo.rawValues;
       state.bElevationAdded = fileInfo.bElevationAdded;
+      state.bTimeAdded = fileInfo.bTimeAdded;
       state.rawAverageSlope = fileInfo.averageSlope;
       state.totalDistance = fileInfo.totalDistance;
     },
@@ -179,6 +188,9 @@ export default new Vuex.Store({
     setSmoothedValues(state, smoothedValues) {
       state.smoothedAverageSlope = smoothedValues.averageSlope;
       state.smoothedValues = smoothedValues.smoothedValues;
+    },
+    saveTime(state, bSave) {
+      state.saveTime = bSave;
     },
     resetSmoothing(state) {
       state.selection = null;

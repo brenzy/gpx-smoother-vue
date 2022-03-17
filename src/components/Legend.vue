@@ -44,8 +44,8 @@
     }),
     computed: {
       ...mapState({
-        formattedRawAverage: state => state.rawAverageSlope ? `${state.rawAverageSlope}%` : '',
-        formattedSmoothedAverage: state => state.smoothedAverageSlope ? `${state.smoothedAverageSlope}%` : '',
+        formattedRawAverage: state => state.rawAverageSlope !== null ? `${state.rawAverageSlope}%` : '',
+        formattedSmoothedAverage: state => state.smoothedAverageSlope !== null ? `${state.smoothedAverageSlope}%` : '',
       }),
     },
     mounted() {

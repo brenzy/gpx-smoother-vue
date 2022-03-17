@@ -20,6 +20,9 @@
       <li><span class="font-weight-bold">Slope Difficulty</span> - Increase or decrease the slope between each set of points by a percentage.</li>
       <li><span class="font-weight-bold">Elevate</span> - increases or decreases the elevation of each point by a fixed amount.</li>
     </ul>
+
+    <p>The <span class="font-weight-bold">One Second Time Intervals</span> button will add a time stamp to each track point, and eacg time stamp
+       will be one second from the previous time stamp.</p>
     <p>
       Slide the <span class="font-weight-bold">triangular handles</span> on the smaller graph to select only a portion of the ride to smooth.
     </p>
@@ -62,6 +65,13 @@
     </ul>
 
     <h2 class="change-log">Change Log</h2>
+
+    <h3>Version 1.9.0 - 2022-03-16</h3>
+    <ul>
+      <li>Updated slope calculation to remove extra rounding for floating point precision.</li>
+      <li>Updated slope display to add decimal place and display 0 value.</li>
+      <li>Added code for updating time stamps to 1 second intervals.</li>
+    </ul>
 
     <h3>Version 1.8.0 - 2021-05-04</h3>
     <ul>

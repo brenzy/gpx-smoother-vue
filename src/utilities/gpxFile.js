@@ -44,6 +44,9 @@ export function parseJson(jsonRoot) {
               }
               point.lat = Number(trkpt.$.lat);
               point.long = Number(trkpt.$.lon);
+              if (trkpt.time && trkpt.time.length) {
+                point.time = trkpt.time[0];
+              }
               if (trkpt.ele && trkpt.ele.length) {
                 point.ele = Number(trkpt.ele[0]);
               } else {
@@ -87,7 +90,7 @@ export function parseJson(jsonRoot) {
   };
 }
 
-export function updateJson(jsonRoot, name, desc, newValues, decreasePrecision, laps) {
+export function updateJson(jsonRoot, name, desc, newValues, decreasePrecision, laps, updateTime) {
   if (!jsonRoot) {
     throw (SAVE_ERRORS.SAVE_ERROR);
   }
@@ -135,6 +138,9 @@ export function updateJson(jsonRoot, name, desc, newValues, decreasePrecision, l
               }
               if (trkpt.ele && trkpt.ele.length) {
                 trkpt.ele = [decreasePrecision ? Math.floor(point.ele * 100) / 100 : point.ele];
+              }
+              if (updateTime && point.time) {
+                trkpt.time = [point.time];
               }
             });
             if (laps > 1) {
