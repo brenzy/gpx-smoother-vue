@@ -122,6 +122,13 @@
           v-model.number="metresShift"
         />
       </div>
+      <div class="input-row">
+        <v-btn
+            @click="onUpdateTimeIntervals"
+            :disabled="!canSmooth">
+          One second time intervals
+        </v-btn>
+      </div>
       <v-btn
         @click="onResetData"
         :disabled="!canSmooth">
@@ -195,7 +202,7 @@ export default {
     numLaps: 1
   }),
   computed: {
-    ...mapState(['selectedGpxFile', 'outputName', 'description', 'fileJson', 'selection', 'smoothedValues']),
+    ...mapState(['selectedGpxFile', 'outputName', 'description', 'fileJson', 'selection', 'smoothedValues', 'saveTime']),
     ...mapState({
       isLoading: state => state.isLoading,
       loadError: state => state.loadError,
@@ -254,6 +261,9 @@ export default {
     onElevateValues() {
       this.addOperation('elevate', {metres: this.metresShift});
     },
+    onUpdateTimeIntervals() {
+      this.addOperation('updateTimeIntervals');
+    },
     onResetData() {
       store.dispatch('resetSmoothing');
     },
@@ -276,7 +286,7 @@ export default {
       }
       const smoothedJson = JSON.parse(JSON.stringify(this.fileJson));
       updateJson(smoothedJson, this.gpxName, this.gpxDescription, this.smoothedValues, this.decreasePrecision,
-        this.numLaps);
+        this.numLaps, this.saveTime);
       let builder = new xml2js.Builder();
       const smoothedGpx = builder.buildObject(smoothedJson);
       this.download(this.gpxFileName, smoothedGpx);
@@ -305,7 +315,7 @@ export default {
       max-width: 100px
     .input-row
       display: flex
-      align-items: start
+      align-items: flex-start
       min-height: 70px
       .v-input
         margin-left: 20px

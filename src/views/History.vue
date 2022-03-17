@@ -107,6 +107,9 @@ export default {
         case 'elevate': {
           return `Elevate Values: Shift in metres: ${operation.metres}`;
         }
+        case 'updateTimeIntervals': {
+          return 'Time interval of each point is 1 second';
+        }
       }
     }
   }
