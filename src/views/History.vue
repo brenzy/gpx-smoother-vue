@@ -108,7 +108,8 @@ export default {
           return `Elevate Values: Shift in metres: ${operation.metres}`;
         }
         case 'updateTimeIntervals': {
-          return 'Time interval of each point is 1 second';
+          const timeShift = parseInt(1000.0 / (operation.timeShift / 100.0), 10);
+          return `Time interval of each point is 1 second shifted by ${operation.timeShift} percent (${timeShift} ms)`;
         }
       }
     }
