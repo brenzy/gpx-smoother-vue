@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2022-04-09
+### Added
+- added percentage time shift for time stamp intervals.
+
 ## [1.9.0] - 2022-03-16
 ### Added
 - added code for updating time stamps to one second intervals. 

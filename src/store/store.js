@@ -128,7 +128,7 @@ export default new Vuex.Store({
         }
         case 'updateTimeIntervals': {
           context.commit('saveTime', true);
-          smoothedValues = updateTimeIntervals(toSmooth,
+          smoothedValues = updateTimeIntervals(toSmooth, operation.timeShift,
             context.state.smoothedAverageSlope ? context.state.smoothedAverageSlope : context.state.rawAverageSlope);
           break;
         }

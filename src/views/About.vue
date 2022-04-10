@@ -21,8 +21,8 @@
       <li><span class="font-weight-bold">Elevate</span> - increases or decreases the elevation of each point by a fixed amount.</li>
     </ul>
 
-    <p>The <span class="font-weight-bold">One Second Time Intervals</span> button will add a time stamp to each track point, and eacg time stamp
-       will be one second from the previous time stamp.</p>
+    <p>The <span class="font-weight-bold">One Second Time Intervals</span> button will add a time stamp to each track point, and each time stamp
+       will be one second from the previous time stamp.  Percentage time shift will speed up or slow down the time intervals accordingly.</p>
     <p>
       Slide the <span class="font-weight-bold">triangular handles</span> on the smaller graph to select only a portion of the ride to smooth.
     </p>
@@ -65,6 +65,11 @@
     </ul>
 
     <h2 class="change-log">Change Log</h2>
+
+    <h3>Version 1.10.0 - 2022-04-09</h3>
+    <ul>
+      <li>Add percentage time shift for time stamp intervals.</li>
+    </ul>
 
     <h3>Version 1.9.0 - 2022-03-16</h3>
     <ul>

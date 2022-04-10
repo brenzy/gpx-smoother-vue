@@ -128,6 +128,10 @@
             :disabled="!canSmooth">
           One second time intervals
         </v-btn>
+        <v-text-field
+            label="Percentage time shift"
+            v-model.number="timeShift"
+        />
       </div>
       <v-btn
         @click="onResetData"
@@ -194,6 +198,7 @@ export default {
     maxSlope: 8,
     kalmanR: .01,
     kalmanQ: 3,
+    timeShift: 100,
     useDeltaSlope: false,
     gpxFileName: 'smoother.gpx',
     gpxName: '',
@@ -262,7 +267,7 @@ export default {
       this.addOperation('elevate', {metres: this.metresShift});
     },
     onUpdateTimeIntervals() {
-      this.addOperation('updateTimeIntervals');
+      this.addOperation('updateTimeIntervals', {timeShift: this.timeShift});
     },
     onResetData() {
       store.dispatch('resetSmoothing');
